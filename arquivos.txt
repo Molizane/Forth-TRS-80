@@ -5,3 +5,6 @@ Forth-TRS-80.asm	Fonte descompilado
 Forth-TRS-80.bin	Binário compilado usando o Sjasm (http://xl2s.tk/)
 Forth-TRS-80.lst	Listagem da compilação
 LEIA.ME			Arquivo com detalhes sobre o trabalho
+
+OCR			Diretório com as páginas da revista e o resultado de conversão para texto.
+			Os arquivos apresentam algumas falhas de conversão, mas que eu corrigi para gerar os fontes
