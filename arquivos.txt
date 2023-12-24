@@ -1,8 +1,7 @@
-micro_sistemas_022.pdf	revista com o artigo
-MSFORTH.DAT		Arquivo gerado por OCR dos fontes da Revista Micro Sistemas N∫ 22, p·gina 54
-MSFORTH.BAS		Programa em MSX Basic para gerar o bin·rio em disco
-MSFORTH.CAS		Bin·rio gerado a partir dos arquivos escaneados
+MSFORTH.DAT		Arquivo gerado por OCR dos fontes da Revista Micro Sistemas N¬∫ 22, p√°gina 54
+MSFORTH.BAS		Programa em MSX Basic para gerar o bin√°rio em disco
+MSFORTH.CAS		Bin√°rio gerado a partir dos arquivos escaneados
 Forth-TRS-80.asm	Fonte descompilado
-Forth-TRS-80.bin	Bin·rio compilado usando o Sjasm (http://xl2s.tk/)
-Forth-TRS-80.lst	Listagem da compilaÁ„o
+Forth-TRS-80.bin	Bin√°rio compilado usando o Sjasm (http://xl2s.tk/)
+Forth-TRS-80.lst	Listagem da compila√ß√£o
 LEIA.ME			Arquivo com detalhes sobre o trabalho
