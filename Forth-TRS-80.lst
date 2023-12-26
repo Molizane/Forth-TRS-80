@@ -1,4 +1,4 @@
-Sjasm Z80 Assembler v0.42c - www.xl2s.tk             [2023.12.25 - 04:48:30]
+Sjasm Z80 Assembler v0.42c - www.xl2s.tk             [2023.12.26 - 06:59:19]
 
 Forth-TRS-80.asm
 Errors: 0
@@ -11,7 +11,7 @@ Errors: 0
        6   00:5DC0                      ; REGISTROS:
        7   00:5DC0                      ;   BC = FORTH PROGRAM COUNTER
        8   00:5DC0                      ;   IX = FORTH PROGRAM COUNTER STACK POINTER E DO .. LOOP DATA (I, J)
-       9   00:5DC0                      ;   IY = SEMPRE APONTA PARA A ROTINA L5DFE
+       9   00:5DC0                      ;   IY = SEMPRE APONTA PARA A ROTINA ENDZ80
       10   00:5DC0                      ;
       11   00:5DC0                      ; INICIO DO PROGRAMA
       12   00:5DC0                      ;
@@ -31,24 +31,24 @@ Errors: 0
       26   00:5DC0                      ;
       27   00:5DC0                      ; VARIAVEIS FORTH
       28   00:5DC0                      ;
-      29   00:5DC0  00                  L5DC0:	db 00H
-      30   00:5DC1  00 7D               L5DC1:	dw 7D00H
-      31   00:5DC3  C0 5D               	dw L5DC0
-      32   00:5DC5  04 69               L5DC5:	dw L6904
-      33   00:5DC7  FE 7F               L5DC7:	dw 7FFEH
-      34   00:5DC9  52 69               L5DC9:	dw L6952
-      35   00:5DCB  00 5D               L5DCB:	dw 5D00H
-      36   00:5DCD  00 00               L5DCD:	dw 0000H
-      37   00:5DCF  1E 69               L5DCF:	dw L691E
-      38   00:5DD1  00 00               L5DD1:	dw 0000H
-      39   00:5DD3  10 00               L5DD3:	dw 0010H
-      40   00:5DD5  CF 5D               L5DD5:	dw L5DCF
-      41   00:5DD7  CF 5D               L5DD7:	dw L5DCF
-      42   00:5DD9  CE 67               L5DD9:	dw L67CE
-      43   00:5DDB  00 00               L5DDB:	dw 0000H
-      44   00:5DDD  00 5D               L5DDD:	dw 5D00H
-      45   00:5DDF  51                  L5DDF:	db 51H
-      46   00:5DE0  5E                  L5DE0:	db 5EH
+      29   00:5DC0  00                  BEGIN:	db 00H
+      30   00:5DC1  00 7D               PPP:	dw 7D00H	; PONTEIRO PILHA DE PARAMETROS
+      31   00:5DC3  C0 5D               	dw BEGIN	; PONTEIRO ENDEREÇO DE CARGA DO PROGRAMA
+      32   00:5DC5  04 69               START:	dw MAINLOOP	; PONTEIRO ENDEREÇO DE ENTRADA DA APLICAÇÃO
+      33   00:5DC7  FE 7F               PPR:	dw 7FFEH	; PONTEIRO PILHA DE RETORNO
+      34   00:5DC9  52 69               PPD:	dw KBO		; PONTEIRO PARA PROXIMA PALAVRA A SER INCLUIDA NO DICIONARIO
+      35   00:5DCB  00 5D               PLBP:	dw 5D00H	; PONTEIRO BUFFER DE DIGITAÇÃO DE LINHA
+      36   00:5DCD  00 00               PBUF:	dw 0000H	; PONTEIRO POSICAO DE VARREDURA DO BUFFER DE DIGITACAO
+      37   00:5DCF  1E 69               UPDC:	dw COUTIN	; PONTEIRO ULTIMA PALAVRA DICIONARIO CORRENTE
+      38   00:5DD1  00 00               VMODE:	dw 0000H	; VARIAVEL MODO IMEDIATO (0) OU EXECUCAO (1)
+      39   00:5DD3  10 00               VBASE:	dw 0010H	; VARIAVEL BASE NUMERICA
+      40   00:5DD5  CF 5D               PUPDP:	dw UPDC		; PONTEIRO ULTIMA PALAVRA DICIONARIO PRINCIPAL (FIXO)
+      41   00:5DD7  CF 5D               PUPDC:	dw UPDC		; PONTEIRO ULTIMA PALAVRA DICIONARIO CORRENTE
+      42   00:5DD9  CE 67               UPCC:	dw CTHEN	; PONTEIRO ULTIMA PALAVRA DICIONARIO DE COMPILACAO (IMMEDIATE)
+      43   00:5DDB  00 00               VSTATE:	dw 0000H	; VARIAVEL DE STATE
+      44   00:5DDD  00 5D               BFTC:	dw 5D00H	; PONTEIRO BUFFER TECLADO
+      45   00:5DDF  51                  L5DDF:	db 51H		; LSB ROTINA DE ENTRADA (CSAVE)
+      46   00:5DE0  5E                  L5DE0:	db 5EH		; MSB ROTINA DE ENTRADA (CSAVE)
       47   00:5DE1  00 00               	dw 0000H
       48   00:5DE3  00 00               	dw 0000H
       49   00:5DE5  00 00               	dw 0000H
@@ -59,1529 +59,1524 @@ Errors: 0
       54   00:5DEE  FF FF               	dw 0FFFFH
       55   00:5DF0  00 00               	dw 0000H
       56   00:5DF2                      ;
-      57   00:5DF2  F4 5D               L5DF2:	dw $+2
+      57   00:5DF2  F4 5D               ENDFORTH:	dw $+2
       58   00:5DF4  DD 4E 00            	LD C,(IX+0)
       59   00:5DF7  DD 23               	INC IX
       60   00:5DF9  DD 46 00            	LD B,(IX+0)
       61   00:5DFC  DD 23               	INC IX
-      62   00:5DFE  0A                  L5DFE:	LD A,(BC)
-      63   00:5DFF  6F                  	LD L,A
+      62   00:5DFE  0A                  ENDZ80:	LD A,(BC)	; OBTEM O ENDERECO DA PROXIMA INSTRUCAO
+      63   00:5DFF  6F                  	LD L,A		; OBTEM O ENDERECO DA PROXIMA INSTRUCAO
       64   00:5E00  03                  	INC BC
       65   00:5E01  0A                  	LD A,(BC)
       66   00:5E02  67                  	LD H,A
       67   00:5E03  03                  	INC BC
-      68   00:5E04  5E                  L5E04:	LD E,(HL)
-      69   00:5E05  23                  	INC HL
+      68   00:5E04  5E                  NEXTOP:	LD E,(HL)	; OBTEM A PROXIMA INSTRUCAO
+      69   00:5E05  23                  	INC HL   	; A PARTIR DE HL
       70   00:5E06  56                  	LD D,(HL)
       71   00:5E07  23                  	INC HL
       72   00:5E08  EB                  	EX DE,HL
       73   00:5E09  E9                  	JP (HL)
-      74   00:5E0A  DD 2B               L5E0A:	DEC IX
-      75   00:5E0C  DD 70 00            	LD (IX+0),B
-      76   00:5E0F  DD 2B               	DEC IX
-      77   00:5E11  DD 71 00            	LD (IX+0),C
-      78   00:5E14  4B                  	LD C,E
-      79   00:5E15  42                  	LD B,D
-      80   00:5E16  FD E9               	JP (IY)
-      81   00:5E18                      ;
-      82   00:5E18                      L5E18:	db 'FORTH INICIALIZADO.'
-      82   00:5E18  46 4F 52 54 48 20 49 4E 49 43 49 41 4C 49 5A 41 
-      82   00:5E28  44 4F 2E 
-      83   00:5E2B                      L5E2B:	db 'COMPILADOR FORTH POR A COSTA'
-      83   00:5E2B  43 4F 4D 50 49 4C 41 44 4F 52 20 46 4F 52 54 48 
-      83   00:5E3B  20 50 4F 52 20 41 20 43 4F 53 54 41 
-      84   00:5E47                      ;
-      85   00:5E47                      ; ROTINA DE IMPRESSAO DE SEQUENCIA
-      86   00:5E47                      ; DE CARACTERES
-      87   00:5E47                      ; HL = ENDERECO, E = TAMANHO
-      88   00:5E47                      ;
-      89   00:5E47  2B                  L5E47:	DEC HL
-      90   00:5E48  23                  L5E48:	INC HL
-      91   00:5E49  7E                  	LD A,(HL)
-      92   00:5E4A  CD 3A 03            	CALL VDCHAR
-      93   00:5E4D  1D                  	DEC E
-      94   00:5E4E  20 F8               	JR NZ,L5E48
-      95   00:5E50  C9                  	RET
-      96   00:5E51                      ;
-      97   00:5E51                      ; PONTO DE ENTRADA
-      98   00:5E51                      ;
-      99   00:5E51  CD C9 01            L5E51:	CALL VDCLS
-     100   00:5E54  3E 0D               	LD A,0DH
-     101   00:5E56  CD 3A 03            	CALL VDCHAR
-     102   00:5E59  1E 1C               	LD E,1CH
-     103   00:5E5B  21 2B 5E            	LD HL,L5E2B
-     104   00:5E5E  CD 47 5E            	CALL L5E47
-     105   00:5E61  3E 0D               L5E61:	LD A,0DH
-     106   00:5E63  CD 3A 03            	CALL VDCHAR
-     107   00:5E66  1E 13               	LD E,13H
-     108   00:5E68  21 18 5E            	LD HL,L5E18
-     109   00:5E6B  CD 47 5E            	CALL L5E47
-     110   00:5E6E  3E 0D               	LD A,0DH
-     111   00:5E70  CD 3A 03            	CALL VDCHAR
-     112   00:5E73  21 D1 5D            	LD HL,L5DD1
-     113   00:5E76  36 00               	LD (HL),00H
-     114   00:5E78  2A C5 5D            	LD HL,(L5DC5)
-     115   00:5E7B  ED 7B C1 5D         	LD SP,(L5DC1)
-     116   00:5E7F  FD 21 FE 5D         	LD IY,L5DFE
-     117   00:5E83  DD 2A C7 5D         	LD IX,(L5DC7)
-     118   00:5E87  01 8D 5E            	LD BC,L5E8D
-     119   00:5E8A  C3 04 5E            	JP L5E04
-     120   00:5E8D                      ;
-     121   00:5E8D  8F 5E               L5E8D:	dw $+2
-     122   00:5E8F  91 5E               	dw $+2
-     123   00:5E91  C3 09 49            	JP 4909H
-     124   00:5E94                      ;
+      74   00:5E0A                      ;
+      75   00:5E0A  DD 2B               RUNFORTH:	DEC IX
+      76   00:5E0C  DD 70 00            	LD (IX+0),B
+      77   00:5E0F  DD 2B               	DEC IX
+      78   00:5E11  DD 71 00            	LD (IX+0),C
+      79   00:5E14  4B                  	LD C,E
+      80   00:5E15  42                  	LD B,D
+      81   00:5E16  FD E9               	JP (IY)
+      82   00:5E18                      ;
+      83   00:5E18                      MSGFORTH1:	db 'FORTH INICIALIZADO.'
+      83   00:5E18  46 4F 52 54 48 20 49 4E 49 43 49 41 4C 49 5A 41 
+      83   00:5E28  44 4F 2E 
+      84   00:5E2B                      MSGFORTH2:	db 'COMPILADOR FORTH POR A COSTA'
+      84   00:5E2B  43 4F 4D 50 49 4C 41 44 4F 52 20 46 4F 52 54 48 
+      84   00:5E3B  20 50 4F 52 20 41 20 43 4F 53 54 41 
+      85   00:5E47                      ;
+      86   00:5E47                      ; ROTINA DE IMPRESSAO DE SEQUENCIA
+      87   00:5E47                      ; DE CARACTERES
+      88   00:5E47                      ; HL = ENDERECO, E = TAMANHO
+      89   00:5E47                      ;
+      90   00:5E47  2B                  PUTTEXT:	DEC HL
+      91   00:5E48  23                  PUTTX1:	INC HL
+      92   00:5E49  7E                  	LD A,(HL)
+      93   00:5E4A  CD 3A 03            	CALL VDCHAR
+      94   00:5E4D  1D                  	DEC E
+      95   00:5E4E  20 F8               	JR NZ,PUTTX1
+      96   00:5E50  C9                  	RET
+      97   00:5E51                      ;
+      98   00:5E51                      ; PONTO DE ENTRADA
+      99   00:5E51                      ;
+     100   00:5E51  CD C9 01            MAIN:	CALL VDCLS
+     101   00:5E54  3E 0D               	LD A,0DH
+     102   00:5E56  CD 3A 03            	CALL VDCHAR
+     103   00:5E59  1E 1C               	LD E,1CH
+     104   00:5E5B  21 2B 5E            	LD HL,MSGFORTH2
+     105   00:5E5E  CD 47 5E            	CALL PUTTEXT
+     106   00:5E61  3E 0D               PROMPT:	LD A,0DH
+     107   00:5E63  CD 3A 03            	CALL VDCHAR
+     108   00:5E66  1E 13               	LD E,13H
+     109   00:5E68  21 18 5E            	LD HL,MSGFORTH1
+     110   00:5E6B  CD 47 5E            	CALL PUTTEXT
+     111   00:5E6E  3E 0D               	LD A,0DH
+     112   00:5E70  CD 3A 03            	CALL VDCHAR
+     113   00:5E73  21 D1 5D            	LD HL,VMODE
+     114   00:5E76  36 00               	LD (HL),00H
+     115   00:5E78  2A C5 5D            	LD HL,(START)
+     116   00:5E7B  ED 7B C1 5D         	LD SP,(PPP)
+     117   00:5E7F  FD 21 FE 5D         	LD IY,ENDZ80
+     118   00:5E83  DD 2A C7 5D         	LD IX,(PPR)
+     119   00:5E87  01 8D 5E            	LD BC,SPFORTH
+     120   00:5E8A  C3 04 5E            	JP NEXTOP
+     121   00:5E8D                      ;
+     122   00:5E8D  8F 5E               SPFORTH:	dw $+2
+     123   00:5E8F  91 5E               	dw $+2
+     124   00:5E91  C3 09 49            	JP 4909H
      125   00:5E94                      ;
-     126   00:5E94  03                  L5E94:	db 03H
-     127   00:5E95  44 55 50            	db 'DUP'
-     128   00:5E98  00 00               	dw 0000H	; (FIM DO DICIONARIO CORRENTE)
-     129   00:5E9A  9C 5E               L5E9A:	dw $ + 2
-     130   00:5E9C  E1                  	POP HL
-     131   00:5E9D  E5                  	PUSH HL
-     132   00:5E9E  E5                  	PUSH HL
-     133   00:5E9F  C3 FE 5D            	JP L5DFE
-     134   00:5EA2                      ;
-     135   00:5EA2  01                  L5EA2:	db 01H
-     136   00:5EA3  3C                  	db '<'
-     137   00:5EA4  94 5E               	dw L5E94
-     138   00:5EA6  A8 5E               	dw $ + 2
-     139   00:5EA8  D1                  	POP DE
-     140   00:5EA9  E1                  L5EA9:	POP HL
-     141   00:5EAA  A7                  L5EAA:	AND A
-     142   00:5EAB  ED 52               	SBC HL,DE
-     143   00:5EAD  11 00 00            	LD DE,0000H
-     144   00:5EB0  F2 B4 5E            	JP P,L5EB4
-     145   00:5EB3  1C                  	INC E
-     146   00:5EB4  D5                  L5EB4:	PUSH DE
-     147   00:5EB5  C3 FE 5D            	JP L5DFE
-     148   00:5EB8                      ;
-     149   00:5EB8  01                  L5EB8:	db 01H
-     150   00:5EB9  3E                  	db '>'
-     151   00:5EBA  A2 5E               	dw L5EA2
-     152   00:5EBC  BE 5E               	dw $ + 2
-     153   00:5EBE  E1                  	POP HL
-     154   00:5EBF  D1                  	POP DE
-     155   00:5EC0  C3 AA 5E            	JP L5EAA
-     156   00:5EC3                      ;
-     157   00:5EC3  02                  L5EC3:	db 02H
-     158   00:5EC4  30 3C               	db '0<'
-     159   00:5EC6  B8 5E               	dw L5EB8
-     160   00:5EC8  CA 5E               	dw $ + 2
-     161   00:5ECA  11 00 00            	LD DE,0000H
-     162   00:5ECD  C3 A9 5E            	JP L5EA9
-     163   00:5ED0                      ;
-     164   00:5ED0  03                  L5ED0:	db 03H
-     165   00:5ED1  52 4F 54            	db 'ROT'
-     166   00:5ED4  C3 5E               	dw L5EC3
-     167   00:5ED6  D8 5E               	dw $ + 2
-     168   00:5ED8  D1                  	POP DE
-     169   00:5ED9  E1                  	POP HL
-     170   00:5EDA  E3                  	EX (SP),HL
-     171   00:5EDB  D5                  	PUSH DE
-     172   00:5EDC  E5                  	PUSH HL
-     173   00:5EDD  C3 FE 5D            	JP L5DFE
-     174   00:5EE0                      ;
-     175   00:5EE0  04                  L5EE0:	db 04H
-     176   00:5EE1  45 4D 49 54         	db 'EMIT'
-     177   00:5EE5  D0 5E               	dw L5ED0
-     178   00:5EE7  E9 5E               	dw $ + 2
-     179   00:5EE9  E1                  	POP HL
-     180   00:5EEA  7D                  	LD A,L
-     181   00:5EEB  CD 3A 03            	CALL VDCHAR
-     182   00:5EEE  C3 FE 5D            	JP L5DFE
-     183   00:5EF1                      ;
-     184   00:5EF1  03                  L5EF1:	db 03H
-     185   00:5EF2  4B 45 59            	db 'KEY'
-     186   00:5EF5  E0 5E               	dw L5EE0
-     187   00:5EF7  F9 5E               	dw $ + 2
-     188   00:5EF9  CD 49 00            	CALL KEYIN
-     189   00:5EFC  6F                  	LD L,A
-     190   00:5EFD  E5                  	PUSH HL
-     191   00:5EFE  C3 FE 5D            	JP L5DFE
-     192   00:5F01                      ;
-     193   00:5F01  04                  L5F01:	db 04H
-     194   00:5F02  44 52 4F 50         	db 'DROP'
-     195   00:5F06  F1 5E               	dw L5EF1
-     196   00:5F08  0A 5F               L5F08:	dw $ + 2
-     197   00:5F0A  E1                  	POP HL
-     198   00:5F0B  C3 FE 5D            	JP L5DFE
-     199   00:5F0E                      ;
-     200   00:5F0E  05                  L5F0E:	db 05H
-     201   00:5F0F  43 53 41 56 45      	db 'CSAVE'
-     202   00:5F14  01 5F               	dw L5F01
-     203   00:5F16  18 5F               	dw $ + 2
-     204   00:5F18  FD E5               	PUSH IY
-     205   00:5F1A  FD 21 92 5F         	LD IY,L5F92
-     206   00:5F1E  D9                  	EXX
-     207   00:5F1F  2A C9 5D            	LD HL,(L5DC9)
-     208   00:5F22  11 C1 5D            	LD DE,L5DC1
-     209   00:5F25  AF                  	XOR A
-     210   00:5F26  ED 52               	SBC HL,DE
-     211   00:5F28  23                  	INC HL
-     212   00:5F29  CD 87 02            	CALL WLEADER
-     213   00:5F2C  3E 55               	LD A,55H
-     214   00:5F2E  CD 64 02            	CALL CASOUT
-     215   00:5F31  06 06               	LD B,06H
-     216   00:5F33  FD 7E 00            L5F33:	LD A,(IY+0)
-     217   00:5F36  CD 64 02            	CALL CASOUT
-     218   00:5F39  FD 23               	INC IY
-     219   00:5F3B  10 F6               	DJNZ L5F33
-     220   00:5F3D  25                  L5F3D:	DEC H
-     221   00:5F3E  FA 4F 5F            	JP M,L5F4F
-     222   00:5F41  3E 3C               	LD A,3CH
-     223   00:5F43  CD 64 02            	CALL CASOUT
-     224   00:5F46  AF                  	XOR A
-     225   00:5F47  CD 64 02            	CALL CASOUT
-     226   00:5F4A  CD 79 5F            	CALL L5F79
-     227   00:5F4D  18 EE               	JR L5F3D
-     228   00:5F4F                      ;
-     229   00:5F4F  AF                  L5F4F:	XOR A
-     230   00:5F50  BD                  	CP L
-     231   00:5F51  28 0C               	JR Z,L5F5F
-     232   00:5F53  3E 3C               	LD A,3CH
-     233   00:5F55  CD 64 02            	CALL CASOUT
-     234   00:5F58  7D                  	LD A,L
-     235   00:5F59  CD 64 02            	CALL CASOUT
-     236   00:5F5C  CD 79 5F            	CALL L5F79
-     237   00:5F5F  3E 78               L5F5F:	LD A,78H
-     238   00:5F61  CD 64 02            	CALL CASOUT
-     239   00:5F64  3A DF 5D            	LD A,(L5DDF)
-     240   00:5F67  CD 64 02            	CALL CASOUT
-     241   00:5F6A  3A E0 5D            	LD A,(L5DE0)
-     242   00:5F6D  CD 64 02            	CALL CASOUT
-     243   00:5F70  CD F8 01            	CALL CASSTOP
-     244   00:5F73  FD E1               	POP IY
-     245   00:5F75  D9                  	EXX
-     246   00:5F76  C3 FE 5D            	JP L5DFE
-     247   00:5F79                      ;
-     248   00:5F79  47                  L5F79:	LD B,A
-     249   00:5F7A  7B                  	LD A,E
-     250   00:5F7B  CD 64 02            	CALL CASOUT
-     251   00:5F7E  7A                  	LD A,D
-     252   00:5F7F  CD 64 02            	CALL CASOUT
-     253   00:5F82  83                  	ADD A,E
-     254   00:5F83  4F                  	LD C,A
-     255   00:5F84  1A                  L5F84:	LD A,(DE)
-     256   00:5F85  CD 64 02            	CALL CASOUT
-     257   00:5F88  81                  	ADD A,C
-     258   00:5F89  4F                  	LD C,A
-     259   00:5F8A  13                  	INC DE
-     260   00:5F8B  10 F7               	DJNZ L5F84
-     261   00:5F8D  79                  	LD A,C
-     262   00:5F8E  CD 64 02            	CALL CASOUT
-     263   00:5F91  C9                  	RET
-     264   00:5F92                      ;
-     265   00:5F92  46 4F 52 54 48 20   L5F92:	db 'FORTH '
-     266   00:5F98                      ;
-     267   00:5F98  03                  L5F98:	db 03H
-     268   00:5F99  4C 42 50            	db 'LBP'
-     269   00:5F9C  0E 5F               	dw L5F0E
-     270   00:5F9E  A0 5F               	dw $ + 2
-     271   00:5FA0  21 CB 5D            	LD HL,L5DCB
-     272   00:5FA3  E5                  	PUSH HL
-     273   00:5FA4  C3 FE 5D            	JP L5DFE
-     274   00:5FA7                      ;
-     275   00:5FA7  A9 5F               L5FA7:	dw $+2
-     276   00:5FA9  21 01 00            	LD HL,0001H
-     277   00:5FAC  22 CD 5D            	LD (L5DCD),HL
-     278   00:5FAF  2A DD 5D            	LD HL,(L5DDD)
-     279   00:5FB2  22 CB 5D            	LD (L5DCB),HL
-     280   00:5FB5  E5                  	PUSH HL
-     281   00:5FB6  C3 C3 5F            	JP L5FC3
-     282   00:5FB9                      ;
-     283   00:5FB9  05                  L5FB9:	db 05H
-     284   00:5FBA  49 4E 50 55 54      	db 'INPUT'
-     285   00:5FBF  98 5F               	dw L5F98
-     286   00:5FC1  C3 5F               	dw $ + 2
-     287   00:5FC3  3E 0D               L5FC3:	LD A,0DH
-     288   00:5FC5  CD 2D 60            	CALL L602D
-     289   00:5FC8  E1                  	POP HL
-     290   00:5FC9  C5                  	PUSH BC
-     291   00:5FCA  E5                  	PUSH HL
-     292   00:5FCB  C1                  	POP BC
-     293   00:5FCC  CD 49 00            L5FCC:	CALL KEYIN
-     294   00:5FCF  FE 08               	CP 08H
-     295   00:5FD1  20 06               	JR NZ,L5FD9
-     296   00:5FD3  2B                  	DEC HL
-     297   00:5FD4  36 20               	LD (HL),20H
-     298   00:5FD6  C3 F2 5F            	JP L5FF2
-     299   00:5FD9                      ;
-     300   00:5FD9  FE 0A               L5FD9:	CP 0AH
-     301   00:5FDB  C2 EC 5F            	JP NZ,L5FEC
-     302   00:5FDE  2B                  	DEC HL
-     303   00:5FDF  3E 08               	LD A,08H
-     304   00:5FE1  CD 3A 03            	CALL VDCHAR
-     305   00:5FE4  3E 08               	LD A,08H
-     306   00:5FE6  CD 2D 60            	CALL L602D
-     307   00:5FE9  C3 CC 5F            	JP L5FCC
-     308   00:5FEC                      ;
-     309   00:5FEC  FE 5B               L5FEC:	CP 5BH
-     310   00:5FEE  20 08               	JR NZ,L5FF8
-     311   00:5FF0  7E                  	LD A,(HL)
-     312   00:5FF1  23                  	INC HL
-     313   00:5FF2  CD 19 60            L5FF2:	CALL L6019
-     314   00:5FF5  C3 CC 5F            	JP L5FCC
-     315   00:5FF8                      ;
-     316   00:5FF8  FE 0D               L5FF8:	CP 0DH
-     317   00:5FFA  28 04               	JR Z,L6000
-     318   00:5FFC  77                  	LD (HL),A
-     319   00:5FFD  23                  	INC HL
-     320   00:5FFE  18 F2               	JR L5FF2
-     321   00:6000                      ;
-     322   00:6000  36 00               L6000:	LD (HL),00H
-     323   00:6002  A7                  	AND A
-     324   00:6003  ED 42               	SBC HL,BC
-     325   00:6005  0B                  	DEC BC
-     326   00:6006  7C                  	LD A,H
-     327   00:6007  02                  	LD (BC),A
-     328   00:6008  0B                  	DEC BC
-     329   00:6009  7D                  	LD A,L
-     330   00:600A  02                  	LD (BC),A
-     331   00:600B  3E 08               	LD A,08H
-     332   00:600D  CD 3A 03            	CALL VDCHAR
-     333   00:6010  3E 20               	LD A,20H
-     334   00:6012  CD 3A 03            	CALL VDCHAR
-     335   00:6015  C1                  	POP BC
-     336   00:6016  C3 FE 5D            	JP L5DFE
-     337   00:6019                      ;
-     338   00:6019  E5                  L6019:	PUSH HL
-     339   00:601A  6F                  	LD L,A
-     340   00:601B  3E 08               	LD A,08H
-     341   00:601D  CD 3A 03            	CALL VDCHAR
-     342   00:6020  7D                  	LD A,L
-     343   00:6021  CD 3A 03            	CALL VDCHAR
-     344   00:6024  3A 37 60            	LD A,(L6037)
-     345   00:6027  CD 3A 03            	CALL VDCHAR
-     346   00:602A  7D                  	LD A,L
-     347   00:602B  E1                  	POP HL
-     348   00:602C  C9                  	RET
-     349   00:602D                      ;
-     350   00:602D  CD 3A 03            L602D:	CALL VDCHAR
-     351   00:6030  3A 37 60            	LD A,(L6037)
-     352   00:6033  CD 3A 03            	CALL VDCHAR
-     353   00:6036  C9                  	RET
-     354   00:6037                      ;
-     355   00:6037  B0                  L6037:	db 0B0H	; Caracter utilizado como CURSOR
-     356   00:6038  00                  	db 00H
-     357   00:6039                      ;
-     358   00:6039  06                  L6039:	db 06H
-     359   00:603A  43 55 52 53 4F 52   	db 'CURSOR'
-     360   00:6040  B9 5F               	dw L5FB9
-     361   00:6042  44 60               	dw $ + 2
-     362   00:6044  21 37 60            	LD HL,L6037
-     363   00:6047  E5                  	PUSH HL
-     364   00:6048  C3 FE 5D            	JP L5DFE
-     365   00:604B                      ;
-     366   00:604B  05                  L604B:	db 05H
-     367   00:604C  54 4F 4B 45 4E      	db 'TOKEN'
-     368   00:6051  39 60               	dw L6039
-     369   00:6053  55 60               L6053:	dw $ + 2
-     370   00:6055  D9                  	EXX
-     371   00:6056  2A CB 5D            	LD HL,(L5DCB)
-     372   00:6059  ED 5B C9 5D         	LD DE,(L5DC9)
-     373   00:605D  C1                  	POP BC
-     374   00:605E  3E 20               	LD A,20H
-     375   00:6060  B9                  	CP C
-     376   00:6061  20 06               	JR NZ,L6069
-     377   00:6063  BE                  L6063:	CP (HL)
-     378   00:6064  20 03               	JR NZ,L6069
-     379   00:6066  23                  	INC HL
-     380   00:6067  18 FA               	JR L6063
-     381   00:6069                      ;
-     382   00:6069  E5                  L6069:	PUSH HL
-     383   00:606A  04                  L606A:	INC B
+     126   00:5E94                      ; DICIONARIO FORTH
+     127   00:5E94                      ;
+     128   00:5E94  03                  CDUP:	db 03H
+     129   00:5E95  44 55 50            	db 'DUP'
+     130   00:5E98  00 00               	dw 0000H	; (FIM DO DICIONARIO CORRENTE)
+     131   00:5E9A  9C 5E               DUP:	dw $+2
+     132   00:5E9C  E1                  	POP HL
+     133   00:5E9D  E5                  	PUSH HL
+     134   00:5E9E  E5                  	PUSH HL
+     135   00:5E9F  C3 FE 5D            	JP ENDZ80
+     136   00:5EA2                      ;
+     137   00:5EA2  01                  CMENOR:	db 01H
+     138   00:5EA3  3C                  	db '<'
+     139   00:5EA4  94 5E               	dw CDUP
+     140   00:5EA6  A8 5E               	dw $+2
+     141   00:5EA8  D1                  	POP DE
+     142   00:5EA9  E1                  MENOR1:	POP HL
+     143   00:5EAA  A7                  MENOR2:	AND A
+     144   00:5EAB  ED 52               	SBC HL,DE
+     145   00:5EAD  11 00 00            	LD DE,0000H
+     146   00:5EB0  F2 B4 5E            	JP P,MENOR3
+     147   00:5EB3  1C                  	INC E
+     148   00:5EB4  D5                  MENOR3:	PUSH DE
+     149   00:5EB5  C3 FE 5D            	JP ENDZ80
+     150   00:5EB8                      ;
+     151   00:5EB8  01                  CMAIOR:	db 01H
+     152   00:5EB9  3E                  	db '>'
+     153   00:5EBA  A2 5E               	dw CMENOR
+     154   00:5EBC  BE 5E               	dw $+2
+     155   00:5EBE  E1                  	POP HL
+     156   00:5EBF  D1                  	POP DE
+     157   00:5EC0  C3 AA 5E            	JP MENOR2
+     158   00:5EC3                      ;
+     159   00:5EC3  02                  CEMN0:	db 02H
+     160   00:5EC4  30 3C               	db '0<'
+     161   00:5EC6  B8 5E               	dw CMAIOR
+     162   00:5EC8  CA 5E               	dw $+2
+     163   00:5ECA  11 00 00            	LD DE,0000H
+     164   00:5ECD  C3 A9 5E            	JP MENOR1
+     165   00:5ED0                      ;
+     166   00:5ED0  03                  CROT:	db 03H
+     167   00:5ED1  52 4F 54            	db 'ROT'
+     168   00:5ED4  C3 5E               	dw CEMN0
+     169   00:5ED6  D8 5E               	dw $+2
+     170   00:5ED8  D1                  	POP DE
+     171   00:5ED9  E1                  	POP HL
+     172   00:5EDA  E3                  	EX (SP),HL
+     173   00:5EDB  D5                  	PUSH DE
+     174   00:5EDC  E5                  	PUSH HL
+     175   00:5EDD  C3 FE 5D            	JP ENDZ80
+     176   00:5EE0                      ;
+     177   00:5EE0  04                  CEMIT:	db 04H
+     178   00:5EE1  45 4D 49 54         	db 'EMIT'
+     179   00:5EE5  D0 5E               	dw CROT
+     180   00:5EE7  E9 5E               	dw $+2
+     181   00:5EE9  E1                  	POP HL
+     182   00:5EEA  7D                  	LD A,L
+     183   00:5EEB  CD 3A 03            	CALL VDCHAR
+     184   00:5EEE  C3 FE 5D            	JP ENDZ80
+     185   00:5EF1                      ;
+     186   00:5EF1  03                  CKEY:	db 03H
+     187   00:5EF2  4B 45 59            	db 'KEY'
+     188   00:5EF5  E0 5E               	dw CEMIT
+     189   00:5EF7  F9 5E               	dw $+2
+     190   00:5EF9  CD 49 00            	CALL KEYIN
+     191   00:5EFC  6F                  	LD L,A
+     192   00:5EFD  E5                  	PUSH HL
+     193   00:5EFE  C3 FE 5D            	JP ENDZ80
+     194   00:5F01                      ;
+     195   00:5F01  04                  CDROP:	db 04H
+     196   00:5F02  44 52 4F 50         	db 'DROP'
+     197   00:5F06  F1 5E               	dw CKEY
+     198   00:5F08  0A 5F               DROP:	dw $+2
+     199   00:5F0A  E1                  	POP HL
+     200   00:5F0B  C3 FE 5D            	JP ENDZ80
+     201   00:5F0E                      ;
+     202   00:5F0E  05                  CCSAVE:	db 05H
+     203   00:5F0F  43 53 41 56 45      	db 'CSAVE'
+     204   00:5F14  01 5F               	dw CDROP
+     205   00:5F16  18 5F               	dw $+2
+     206   00:5F18  FD E5               	PUSH IY
+     207   00:5F1A  FD 21 92 5F         	LD IY,FORTH
+     208   00:5F1E  D9                  	EXX
+     209   00:5F1F  2A C9 5D            	LD HL,(PPD)
+     210   00:5F22  11 C1 5D            	LD DE,PPP
+     211   00:5F25  AF                  	XOR A
+     212   00:5F26  ED 52               	SBC HL,DE
+     213   00:5F28  23                  	INC HL
+     214   00:5F29  CD 87 02            	CALL WLEADER
+     215   00:5F2C  3E 55               	LD A,55H
+     216   00:5F2E  CD 64 02            	CALL CASOUT
+     217   00:5F31  06 06               	LD B,06H
+     218   00:5F33  FD 7E 00            CSAVE1:	LD A,(IY+0)
+     219   00:5F36  CD 64 02            	CALL CASOUT
+     220   00:5F39  FD 23               	INC IY
+     221   00:5F3B  10 F6               	DJNZ CSAVE1
+     222   00:5F3D  25                  CSAVE2:	DEC H
+     223   00:5F3E  FA 4F 5F            	JP M,CSAVE3
+     224   00:5F41  3E 3C               	LD A,3CH
+     225   00:5F43  CD 64 02            	CALL CASOUT
+     226   00:5F46  AF                  	XOR A
+     227   00:5F47  CD 64 02            	CALL CASOUT
+     228   00:5F4A  CD 79 5F            	CALL CSAVE5
+     229   00:5F4D  18 EE               	JR CSAVE2
+     230   00:5F4F                      ;
+     231   00:5F4F  AF                  CSAVE3:	XOR A
+     232   00:5F50  BD                  	CP L
+     233   00:5F51  28 0C               	JR Z,CSAVE4
+     234   00:5F53  3E 3C               	LD A,3CH
+     235   00:5F55  CD 64 02            	CALL CASOUT
+     236   00:5F58  7D                  	LD A,L
+     237   00:5F59  CD 64 02            	CALL CASOUT
+     238   00:5F5C  CD 79 5F            	CALL CSAVE5
+     239   00:5F5F  3E 78               CSAVE4:	LD A,78H
+     240   00:5F61  CD 64 02            	CALL CASOUT
+     241   00:5F64  3A DF 5D            	LD A,(L5DDF)
+     242   00:5F67  CD 64 02            	CALL CASOUT
+     243   00:5F6A  3A E0 5D            	LD A,(L5DE0)
+     244   00:5F6D  CD 64 02            	CALL CASOUT
+     245   00:5F70  CD F8 01            	CALL CASSTOP
+     246   00:5F73  FD E1               	POP IY
+     247   00:5F75  D9                  	EXX
+     248   00:5F76  C3 FE 5D            	JP ENDZ80
+     249   00:5F79                      ;
+     250   00:5F79  47                  CSAVE5:	LD B,A
+     251   00:5F7A  7B                  	LD A,E
+     252   00:5F7B  CD 64 02            	CALL CASOUT
+     253   00:5F7E  7A                  	LD A,D
+     254   00:5F7F  CD 64 02            	CALL CASOUT
+     255   00:5F82  83                  	ADD A,E
+     256   00:5F83  4F                  	LD C,A
+     257   00:5F84  1A                  CSAVE6:	LD A,(DE)
+     258   00:5F85  CD 64 02            	CALL CASOUT
+     259   00:5F88  81                  	ADD A,C
+     260   00:5F89  4F                  	LD C,A
+     261   00:5F8A  13                  	INC DE
+     262   00:5F8B  10 F7               	DJNZ CSAVE6
+     263   00:5F8D  79                  	LD A,C
+     264   00:5F8E  CD 64 02            	CALL CASOUT
+     265   00:5F91  C9                  	RET
+     266   00:5F92                      ;
+     267   00:5F92  46 4F 52 54 48 20   FORTH:	db 'FORTH '
+     268   00:5F98                      ;
+     269   00:5F98  03                  CLBP:	db 03H
+     270   00:5F99  4C 42 50            	db 'LBP'
+     271   00:5F9C  0E 5F               	dw CCSAVE
+     272   00:5F9E  A0 5F               	dw $+2
+     273   00:5FA0  21 CB 5D            	LD HL,PLBP
+     274   00:5FA3  E5                  	PUSH HL
+     275   00:5FA4  C3 FE 5D            	JP ENDZ80
+     276   00:5FA7                      ;
+     277   00:5FA7  A9 5F               INPUT:	dw $+2
+     278   00:5FA9  21 01 00            	LD HL,0001H
+     279   00:5FAC  22 CD 5D            	LD (PBUF),HL
+     280   00:5FAF  2A DD 5D            	LD HL,(BFTC)
+     281   00:5FB2  22 CB 5D            	LD (PLBP),HL
+     282   00:5FB5  E5                  	PUSH HL
+     283   00:5FB6  C3 C3 5F            	JP INPUT1
+     284   00:5FB9                      ;
+     285   00:5FB9  05                  CINPUT:	db 05H
+     286   00:5FBA  49 4E 50 55 54      	db 'INPUT'
+     287   00:5FBF  98 5F               	dw CLBP
+     288   00:5FC1  C3 5F               	dw $+2
+     289   00:5FC3  3E 0D               INPUT1:	LD A,0DH
+     290   00:5FC5  CD 2D 60            	CALL INPUT9
+     291   00:5FC8  E1                  	POP HL
+     292   00:5FC9  C5                  	PUSH BC
+     293   00:5FCA  E5                  	PUSH HL
+     294   00:5FCB  C1                  	POP BC
+     295   00:5FCC  CD 49 00            INPUT2:	CALL KEYIN
+     296   00:5FCF  FE 08               	CP 08H
+     297   00:5FD1  20 06               	JR NZ,INPUT3
+     298   00:5FD3  2B                  	DEC HL
+     299   00:5FD4  36 20               	LD (HL),20H
+     300   00:5FD6  C3 F2 5F            	JP INPUT5
+     301   00:5FD9                      ;
+     302   00:5FD9  FE 0A               INPUT3:	CP 0AH
+     303   00:5FDB  C2 EC 5F            	JP NZ,INPUT4
+     304   00:5FDE  2B                  	DEC HL
+     305   00:5FDF  3E 08               	LD A,08H
+     306   00:5FE1  CD 3A 03            	CALL VDCHAR
+     307   00:5FE4  3E 08               	LD A,08H
+     308   00:5FE6  CD 2D 60            	CALL INPUT9
+     309   00:5FE9  C3 CC 5F            	JP INPUT2
+     310   00:5FEC                      ;
+     311   00:5FEC  FE 5B               INPUT4:	CP 5BH
+     312   00:5FEE  20 08               	JR NZ,INPUT6
+     313   00:5FF0  7E                  	LD A,(HL)
+     314   00:5FF1  23                  	INC HL
+     315   00:5FF2  CD 19 60            INPUT5:	CALL INPUT8
+     316   00:5FF5  C3 CC 5F            	JP INPUT2
+     317   00:5FF8                      ;
+     318   00:5FF8  FE 0D               INPUT6:	CP 0DH
+     319   00:5FFA  28 04               	JR Z,INPUT7
+     320   00:5FFC  77                  	LD (HL),A
+     321   00:5FFD  23                  	INC HL
+     322   00:5FFE  18 F2               	JR INPUT5
+     323   00:6000                      ;
+     324   00:6000  36 00               INPUT7:	LD (HL),00H
+     325   00:6002  A7                  	AND A
+     326   00:6003  ED 42               	SBC HL,BC
+     327   00:6005  0B                  	DEC BC
+     328   00:6006  7C                  	LD A,H
+     329   00:6007  02                  	LD (BC),A
+     330   00:6008  0B                  	DEC BC
+     331   00:6009  7D                  	LD A,L
+     332   00:600A  02                  	LD (BC),A
+     333   00:600B  3E 08               	LD A,08H
+     334   00:600D  CD 3A 03            	CALL VDCHAR
+     335   00:6010  3E 20               	LD A,20H
+     336   00:6012  CD 3A 03            	CALL VDCHAR
+     337   00:6015  C1                  	POP BC
+     338   00:6016  C3 FE 5D            	JP ENDZ80
+     339   00:6019                      ;
+     340   00:6019  E5                  INPUT8:	PUSH HL
+     341   00:601A  6F                  	LD L,A
+     342   00:601B  3E 08               	LD A,08H
+     343   00:601D  CD 3A 03            	CALL VDCHAR
+     344   00:6020  7D                  	LD A,L
+     345   00:6021  CD 3A 03            	CALL VDCHAR
+     346   00:6024  3A 37 60            	LD A,(CCRS)
+     347   00:6027  CD 3A 03            	CALL VDCHAR
+     348   00:602A  7D                  	LD A,L
+     349   00:602B  E1                  	POP HL
+     350   00:602C  C9                  	RET
+     351   00:602D                      
+     352   00:602D  CD 3A 03            INPUT9:	CALL VDCHAR
+     353   00:6030  3A 37 60            	LD A,(CCRS)
+     354   00:6033  CD 3A 03            	CALL VDCHAR
+     355   00:6036  C9                  	RET
+     356   00:6037                      ;
+     357   00:6037  B0 00               CCRS:	dw 00B0H	; CARACTER UTILIZADO COMO CURSOR
+     358   00:6039                      ;
+     359   00:6039  06                  CCURSOR:	db 06H
+     360   00:603A  43 55 52 53 4F 52   	db 'CURSOR'
+     361   00:6040  B9 5F               	dw CINPUT
+     362   00:6042  44 60               	dw $+2
+     363   00:6044  21 37 60            	LD HL,CCRS
+     364   00:6047  E5                  	PUSH HL
+     365   00:6048  C3 FE 5D            	JP ENDZ80
+     366   00:604B                      ;
+     367   00:604B  05                  CTOKEN:	db 05H
+     368   00:604C  54 4F 4B 45 4E      	db 'TOKEN'
+     369   00:6051  39 60               	dw CCURSOR
+     370   00:6053  55 60               TOKEN:	dw $+2
+     371   00:6055  D9                  	EXX
+     372   00:6056  2A CB 5D            	LD HL,(PLBP)
+     373   00:6059  ED 5B C9 5D         	LD DE,(PPD)
+     374   00:605D  C1                  	POP BC
+     375   00:605E  3E 20               	LD A,20H
+     376   00:6060  B9                  	CP C
+     377   00:6061  20 06               	JR NZ,TOKEN2
+     378   00:6063  BE                  TOKEN1:	CP (HL)
+     379   00:6064  20 03               	JR NZ,TOKEN2
+     380   00:6066  23                  	INC HL
+     381   00:6067  18 FA               	JR TOKEN1
+     382   00:6069  E5                  TOKEN2:	PUSH HL
+     383   00:606A  04                  TOKEN3:	INC B
      384   00:606B  23                  	INC HL
      385   00:606C  7E                  	LD A,(HL)
      386   00:606D  B9                  	CP C
-     387   00:606E  28 0C               	JR Z,L607C
+     387   00:606E  28 0C               	JR Z,TOKEN5
      388   00:6070  C5                  	PUSH BC
      389   00:6071  0E 00               	LD C,00H
      390   00:6073  B9                  	CP C
-     391   00:6074  28 03               	JR Z,L6079
+     391   00:6074  28 03               	JR Z,TOKEN4
      392   00:6076  C1                  	POP BC
-     393   00:6077  18 F1               	JR L606A
-     394   00:6079                      ;
-     395   00:6079  C1                  L6079:	POP BC
-     396   00:607A  18 0F               	JR L608B
-     397   00:607C                      ;
-     398   00:607C  3E 20               L607C:	LD A,20H
-     399   00:607E  23                  	INC HL
-     400   00:607F  BE                  L607F:	CP (HL)
-     401   00:6080  20 03               	JR NZ,L6085
-     402   00:6082  23                  	INC HL
-     403   00:6083  18 FA               	JR L607F
-     404   00:6085                      ;
-     405   00:6085  7E                  L6085:	LD A,(HL)
-     406   00:6086  0E 00               	LD C,00H
-     407   00:6088  B9                  	CP C
-     408   00:6089  20 08               	JR NZ,L6093
-     409   00:608B  E5                  L608B:	PUSH HL
-     410   00:608C  21 00 00            	LD HL,0000H
-     411   00:608F  22 CD 5D            	LD (L5DCD),HL
-     412   00:6092  E1                  	POP HL
-     413   00:6093  22 CB 5D            L6093:	LD (L5DCB),HL
-     414   00:6096  78                  	LD A,B
-     415   00:6097  12                  	LD (DE),A
-     416   00:6098  13                  	INC DE
-     417   00:6099  E1                  	POP HL
-     418   00:609A  48                  	LD C,B
-     419   00:609B  06 00               	LD B,00H
-     420   00:609D  ED B0               	LDIR
-     421   00:609F  D9                  	EXX
-     422   00:60A0  C3 FE 5D            	JP L5DFE
-     423   00:60A3                      ;
-     424   00:60A3  06                  L60A3:	db 06H
-     425   00:60A4  53 45 41 52 43 48   	db 'SEARCH'
-     426   00:60AA  4B 60               	dw L604B
-     427   00:60AC  AE 60               L60AC:	dw $ + 2
-     428   00:60AE  D9                  	EXX
-     429   00:60AF  E1                  	POP HL
-     430   00:60B0  E5                  L60B0:	PUSH HL
-     431   00:60B1  ED 5B C9 5D         	LD DE,(L5DC9)
-     432   00:60B5  0E 00               	LD C,00H
-     433   00:60B7  1A                  	LD A,(DE)
-     434   00:60B8  BE                  	CP (HL)
-     435   00:60B9  20 11               	JR NZ,L60CC
-     436   00:60BB  47                  	LD B,A
-     437   00:60BC  23                  L60BC:	INC HL
-     438   00:60BD  13                  	INC DE
-     439   00:60BE  1A                  	LD A,(DE)
-     440   00:60BF  BE                  	CP (HL)
-     441   00:60C0  20 0A               	JR NZ,L60CC
-     442   00:60C2  10 F8               	DJNZ L60BC
-     443   00:60C4  11 03 00            	LD DE,0003H
-     444   00:60C7  19                  	ADD HL,DE
-     445   00:60C8  D1                  	POP DE
-     446   00:60C9  E5                  	PUSH HL
-     447   00:60CA  18 10               	JR L60DC
-     448   00:60CC                      ;
-     449   00:60CC  E1                  L60CC:	POP HL
-     450   00:60CD  16 00               	LD D,00H
-     451   00:60CF  5E                  	LD E,(HL)
-     452   00:60D0  13                  	INC DE
-     453   00:60D1  19                  	ADD HL,DE
-     454   00:60D2  5E                  	LD E,(HL)
-     455   00:60D3  23                  	INC HL
-     456   00:60D4  56                  	LD D,(HL)
-     457   00:60D5  EB                  	EX DE,HL
-     458   00:60D6  7C                  	LD A,H
-     459   00:60D7  B5                  	OR L
-     460   00:60D8  20 D6               	JR NZ,L60B0
-     461   00:60DA  0E 01               	LD C,01H
-     462   00:60DC  06 00               L60DC:	LD B,00H
-     463   00:60DE  C5                  	PUSH BC
-     464   00:60DF  D9                  	EXX
-     465   00:60E0  C3 FE 5D            	JP L5DFE
-     466   00:60E3                      ;
-     467   00:60E3  06                  L60E3:	db 06H
-     468   00:60E4  45 58 45 43 55 54   	db 'EXECUT'
-     469   00:60EA  A3 60               	dw L60A3
-     470   00:60EC  EE 60               L60EC:	dw $ + 2
-     471   00:60EE  E1                  	POP HL
-     472   00:60EF  C3 04 5E            	JP L5E04
-     473   00:60F2                      ;
-     474   00:60F2  04                  L60F2:	db 04H
-     475   00:60F3  4D 4F 44 45         	db 'MODE'
-     476   00:60F7  E3 60               	dw L60E3
-     477   00:60F9  FB 60               L60F9:	dw $ + 2
-     478   00:60FB  21 D1 5D            	LD HL,L5DD1
-     479   00:60FE  E5                  	PUSH HL
-     480   00:60FF  C3 FE 5D            	JP L5DFE
-     481   00:6102                      ;
-     482   00:6102  04 61               L6102:	dw $+2
-     483   00:6104  E1                  	POP HL
-     484   00:6105  DD 75 FC            	LD (IX-4),L
-     485   00:6108  DD 74 FD            	LD (IX-3),H
-     486   00:610B  E1                  	POP HL
-     487   00:610C  DD 75 FE            	LD (IX-2),L
-     488   00:610F  DD 74 FF            	LD (IX-1),H
-     489   00:6112  11 FC FF            	LD DE,0FFFCH
-     490   00:6115  DD 19               	ADD IX,DE
-     491   00:6117  C3 FE 5D            	JP L5DFE
-     492   00:611A                      ;
-     493   00:611A  1C 61               L611A:	dw $+2
-     494   00:611C  DD E5               	PUSH IX
-     495   00:611E  E1                  	POP HL
-     496   00:611F  D1                  	POP DE
-     497   00:6120  7B                  	LD A,E
-     498   00:6121  C3 2B 61            	JP L612B
-     499   00:6124                      ;
-     500   00:6124  26 61               L6124:	dw $+2
-     501   00:6126  DD E5               	PUSH IX
-     502   00:6128  E1                  	POP HL
-     503   00:6129  3E 01               	LD A,01H
-     504   00:612B  86                  L612B:	ADD A,(HL)
-     505   00:612C  77                  	LD (HL),A
-     506   00:612D  23                  	INC HL
-     507   00:612E  30 01               	JR NC,L6131
-     508   00:6130  34                  	INC (HL)
-     509   00:6131  56                  L6131:	LD D,(HL)
-     510   00:6132  23                  	INC HL
-     511   00:6133  96                  	SUB (HL)
-     512   00:6134  7A                  	LD A,D
-     513   00:6135  23                  	INC HL
-     514   00:6136  9E                  	SBC A,(HL)
-     515   00:6137  DA 01 62            	JP C,L6201
-     516   00:613A  11 04 00            	LD DE,0004H
-     517   00:613D  DD 19               	ADD IX,DE
-     518   00:613F  03                  	INC BC
-     519   00:6140  C3 FE 5D            	JP L5DFE
-     520   00:6143                      ;
-     521   00:6143  01                  L6143:	db 01H
-     522   00:6144  40                  	db '@'
-     523   00:6145  F2 60               	dw L60F2
-     524   00:6147  49 61               L6147:	dw $ + 2
-     525   00:6149  E1                  	POP HL
-     526   00:614A  5E                  	LD E,(HL)
-     527   00:614B  23                  	INC HL
-     528   00:614C  56                  	LD D,(HL)
-     529   00:614D  D5                  	PUSH DE
-     530   00:614E  C3 FE 5D            	JP L5DFE
-     531   00:6151                      ;
-     532   00:6151  02                  L6151:	db 02H
-     533   00:6152  30 3D               	db '0='
-     534   00:6154  43 61               	dw L6143
-     535   00:6156  58 61               L6156:	dw $ + 2
-     536   00:6158  E1                  	POP HL
-     537   00:6159  7D                  	LD A,L
-     538   00:615A  B4                  	OR H
-     539   00:615B  11 00 00            	LD DE,0000H
-     540   00:615E  20 01               	JR NZ,L6161
-     541   00:6160  13                  	INC DE
-     542   00:6161  D5                  L6161:	PUSH DE
-     543   00:6162  C3 FE 5D            	JP L5DFE
-     544   00:6165                      ;
-     545   00:6165  06                  L6165:	db 06H
-     546   00:6166  46 54 4F 4B 45 4E   	db 'FTOKEN'
-     547   00:616C  51 61               	dw L6151
-     548   00:616E  70 61               L616E:	dw $ + 2
-     549   00:6170  21 CD 5D            	LD HL,L5DCD
-     550   00:6173  E5                  	PUSH HL
-     551   00:6174  C3 FE 5D            	JP L5DFE
-     552   00:6177                      ;
-     553   00:6177  04                  L6177:	db 04H
-     554   00:6178  45 4E 44 2C         	db 'END,'
-     555   00:617C  65 61               	dw L6165
-     556   00:617E  0A 5E               L617E:	dw L5E0A
-     557   00:6180                      	dw L65EB, L662F, L62E8, L6803, L5DF2
-     557   00:6180  EB 65 2F 66 E8 62 03 68 F2 5D 
-     558   00:618A                      ;
-     559   00:618A  01                  L618A:	db 01H
-     560   00:618B  49                  	db 'I'
-     561   00:618C  77 61               	dw L6177
-     562   00:618E  90 61               	dw $ + 2
-     563   00:6190  DD 6E 00            	LD L,(IX+0)
-     564   00:6193  DD 66 01            	LD H,(IX+1)
-     565   00:6196  E5                  	PUSH HL
-     566   00:6197  C3 FE 5D            	JP L5DFE
-     567   00:619A                      ;
-     568   00:619A  04                  L619A:	db 04H
-     569   00:619B  30 53 45 54         	db '0SET'
-     570   00:619F  8A 61               	dw L618A
-     571   00:61A1  A3 61               L61A1:	dw $ + 2
-     572   00:61A3  E1                  	POP HL
-     573   00:61A4  36 00               	LD (HL),00H
-     574   00:61A6  23                  	INC HL
-     575   00:61A7  36 00               	LD (HL),00H
-     576   00:61A9  C3 FE 5D            	JP L5DFE
-     577   00:61AC                      ;
-     578   00:61AC  04                  L61AC:	db 04H
-     579   00:61AD  31 53 45 54         	db '1SET'
-     580   00:61B1  9A 61               	dw L619A
-     581   00:61B3  B5 61               L61B3:	dw $ + 2
-     582   00:61B5  E1                  	POP HL
-     583   00:61B6  36 01               	LD (HL),01H
-     584   00:61B8  23                  	INC HL
-     585   00:61B9  36 00               	LD (HL),00H
-     586   00:61BB  C3 FE 5D            	JP L5DFE
-     587   00:61BE                      ;
-     588   00:61BE  03                  L61BE:	db 03H
-     589   00:61BF  2A 49 46            	db '*IF'
-     590   00:61C2  AC 61               	dw L61AC
-     591   00:61C4  C6 61               L61C4:	dw $ + 2
-     592   00:61C6  E1                  	POP HL
-     593   00:61C7  7D                  	LD A,L
-     594   00:61C8  B4                  	OR H
-     595   00:61C9  CA DA 61            	JP Z,L61DA
-     596   00:61CC  03                  	INC BC
-     597   00:61CD  C3 FE 5D            	JP L5DFE
-     598   00:61D0                      ;
-     599   00:61D0  05                  L61D0:	db 05H
-     600   00:61D1  2A 45 4C 53 45      	db '*ELSE'
-     601   00:61D6  BE 61               	dw L61BE
-     602   00:61D8  DA 61               L61D8:	dw $ + 2
-     603   00:61DA  0A                  L61DA:	LD A,(BC)
-     604   00:61DB  81                  	ADD A,C
-     605   00:61DC  4F                  	LD C,A
-     606   00:61DD  30 01               	JR NC,L61E0
-     607   00:61DF  04                  	INC B
-     608   00:61E0  C3 FE 5D            L61E0:	JP L5DFE
-     609   00:61E3                      ;
-     610   00:61E3  04                  L61E3:	db 04H
-     611   00:61E4  2A 45 4E 44         	db '*END'
-     612   00:61E8  D0 61               	dw L61D0
-     613   00:61EA  EC 61               L61EA:	dw $ + 2
-     614   00:61EC  E1                  	POP HL
-     615   00:61ED  7D                  	LD A,L
-     616   00:61EE  B4                  	OR H
-     617   00:61EF  CA 01 62            	JP Z,L6201
-     618   00:61F2  03                  	INC BC
-     619   00:61F3  C3 FE 5D            	JP L5DFE
-     620   00:61F6                      ;
-     621   00:61F6  06                  L61F6:	db 06H
-     622   00:61F7  2A 57 48 49 4C 45   	db '*WHILE'
-     623   00:61FD  E3 61               	dw L61E3
-     624   00:61FF  01 62               L61FF:	dw $ + 2
-     625   00:6201  0A                  L6201:	LD A,(BC)
-     626   00:6202  81                  	ADD A,C
-     627   00:6203  4F                  	LD C,A
-     628   00:6204  38 01               	JR C,L6207
-     629   00:6206  05                  	DEC B
-     630   00:6207  C3 FE 5D            L6207:	JP L5DFE
-     631   00:620A                      ;
-     632   00:620A  04                  L620A:	db 04H
-     633   00:620B  50 41 47 45         	db 'PAGE'
-     634   00:620F  F6 61               	dw L61F6
-     635   00:6211  13 62               	dw $ + 2
-     636   00:6213  CD C9 01            	CALL VDCLS
-     637   00:6216  C3 FE 5D            	JP L5DFE
-     638   00:6219                      ;
-     639   00:6219  04                  L6219:	db 04H
-     640   00:621A  42 41 53 45         	db 'BASE'
-     641   00:621E  0A 62               	dw L620A
-     642   00:6220  22 62               L6220:	dw $ + 2
-     643   00:6222  21 D3 5D            	LD HL,L5DD3
-     644   00:6225  E5                  	PUSH HL
-     645   00:6226  C3 FE 5D            	JP L5DFE
-     646   00:6229                      ;
-     647   00:6229  06                  L6229:	db 06H
-     648   00:622A  4E 55 4D 42 45 52   	db 'NUMBER'
-     649   00:6230  19 62               	dw L6219
-     650   00:6232  34 62               L6232:	dw $ + 2
-     651   00:6234  D9                  	EXX
-     652   00:6235  2A C9 5D            	LD HL,(L5DC9)
-     653   00:6238  46                  	LD B,(HL)
-     654   00:6239  23                  	INC HL
-     655   00:623A  7E                  	LD A,(HL)
-     656   00:623B  FE 2D               	CP 2DH
-     657   00:623D  3E 00               	LD A,00H
-     658   00:623F  20 03               	JR NZ,L6244
-     659   00:6241  3D                  	DEC A
-     660   00:6242  05                  	DEC B
-     661   00:6243  23                  	INC HL
-     662   00:6244  08                  L6244:	EX AF,AF'
-     663   00:6245  11 00 00            	LD DE,0000H
-     664   00:6248  D5                  	PUSH DE
-     665   00:6249  D5                  	PUSH DE
-     666   00:624A  7E                  L624A:	LD A,(HL)
-     667   00:624B  D6 30               	SUB 30H
-     668   00:624D  38 12               	JR C,L6261
-     669   00:624F  FE 0A               	CP 0AH
-     670   00:6251  38 06               	JR C,L6259
-     671   00:6253  FE 11               	CP 11H
-     672   00:6255  38 0A               	JR C,L6261
-     673   00:6257  D6 07               	SUB 07H
-     674   00:6259  5F                  L6259:	LD E,A
-     675   00:625A  3A D3 5D            	LD A,(L5DD3)
-     676   00:625D  3D                  	DEC A
-     677   00:625E  BB                  	CP E
-     678   00:625F  30 05               	JR NC,L6266
-     679   00:6261  E1                  L6261:	POP HL
-     680   00:6262  D9                  	EXX
-     681   00:6263  C3 FE 5D            	JP L5DFE
-     682   00:6266                      ;
-     683   00:6266  E3                  L6266:	EX (SP),HL
-     684   00:6267  EB                  	EX DE,HL
-     685   00:6268  C5                  	PUSH BC
-     686   00:6269  E5                  	PUSH HL
-     687   00:626A  01 00 08            	LD BC,0800H
-     688   00:626D  3C                  	INC A
-     689   00:626E  69                  	LD L,C
-     690   00:626F  61                  	LD H,C
-     691   00:6270  29                  L6270:	ADD HL,HL
-     692   00:6271  8F                  	ADC A,A
-     693   00:6272  30 01               	JR NC,L6275
-     694   00:6274  19                  	ADD HL,DE
-     695   00:6275  10 F9               L6275:	DJNZ L6270
-     696   00:6277  D1                  	POP DE
-     697   00:6278  19                  	ADD HL,DE
-     698   00:6279  C1                  	POP BC
-     699   00:627A  E3                  	EX (SP),HL
-     700   00:627B  23                  	INC HL
-     701   00:627C  10 CC               	DJNZ L624A
-     702   00:627E  D1                  	POP DE
-     703   00:627F  E1                  	POP HL
-     704   00:6280  08                  	EX AF,AF'
-     705   00:6281  A7                  	AND A
-     706   00:6282  28 03               	JR Z,L6287
-     707   00:6284  ED 52               	SBC HL,DE
-     708   00:6286  EB                  	EX DE,HL
-     709   00:6287  D5                  L6287:	PUSH DE
-     710   00:6288  37                  	SCF
-     711   00:6289  F5                  	PUSH AF
-     712   00:628A  D9                  	EXX
-     713   00:628B  C3 FE 5D            	JP L5DFE
-     714   00:628E                      ;
-     715   00:628E  7A                  L628E:	LD A,D
-     716   00:628F  A8                  	XOR B
-     717   00:6290  08                  	EX AF,AF'
-     718   00:6291  7A                  	LD A,D
-     719   00:6292  A7                  	AND A
-     720   00:6293  F2 9C 62            	JP P,L629C
-     721   00:6296  21 00 00            	LD HL,0000H
-     722   00:6299  ED 52               	SBC HL,DE
-     723   00:629B  EB                  	EX DE,HL
-     724   00:629C  60                  L629C:	LD H,B
-     725   00:629D  69                  	LD L,C
-     726   00:629E  78                  	LD A,B
-     727   00:629F  A7                  	AND A
-     728   00:62A0  F0                  	RET P
-     729   00:62A1  21 00 00            	LD HL,0000H
-     730   00:62A4  ED 42               	SBC HL,BC
-     731   00:62A6  C9                  	RET
-     732   00:62A7                      ;
-     733   00:62A7  7D                  L62A7:	LD A,L
-     734   00:62A8  01 00 08            	LD BC,0800H
-     735   00:62AB  61                  	LD H,C
-     736   00:62AC  69                  	LD L,C
-     737   00:62AD  29                  L62AD:	ADD HL,HL
-     738   00:62AE  8F                  	ADC A,A
-     739   00:62AF  30 02               	JR NC,L62B3
-     740   00:62B1  19                  	ADD HL,DE
-     741   00:62B2  89                  	ADC A,C
-     742   00:62B3  10 F8               L62B3:	DJNZ L62AD
-     743   00:62B5  4F                  	LD C,A
-     744   00:62B6  C9                  	RET
-     745   00:62B7                      ;
-     746   00:62B7  08                  L62B7:	EX AF,AF'
-     747   00:62B8  F0                  	RET P
-     748   00:62B9  EB                  	EX DE,HL
-     749   00:62BA  21 00 00            	LD HL,0000H
-     750   00:62BD  ED 52               	SBC HL,DE
-     751   00:62BF  C9                  	RET
-     752   00:62C0                      ;
-     753   00:62C0  01                  L62C0:	db 01H
-     754   00:62C1  2A                  	db '*'
-     755   00:62C2  29 62               	dw L6229
-     756   00:62C4  C6 62               L62C4:	dw $ + 2
-     757   00:62C6  D9                  	EXX
-     758   00:62C7  C1                  	POP BC
-     759   00:62C8  D1                  	POP DE
-     760   00:62C9  CD 8E 62            	CALL L628E
-     761   00:62CC  CD A7 62            	CALL L62A7
-     762   00:62CF  CD B7 62            	CALL L62B7
-     763   00:62D2  E5                  	PUSH HL
-     764   00:62D3  D9                  	EXX
-     765   00:62D4  C3 FE 5D            	JP L5DFE
-     766   00:62D7                      ;
-     767   00:62D7  01                  L62D7:	db 01H
-     768   00:62D8  2B                  	db '+'
-     769   00:62D9  C0 62               	dw L62C0
-     770   00:62DB  DD 62               L62DB:	dw $ + 2
-     771   00:62DD  E1                  	POP HL
-     772   00:62DE  D1                  	POP DE
-     773   00:62DF  19                  	ADD HL,DE
-     774   00:62E0  E5                  	PUSH HL
-     775   00:62E1  C3 FE 5D            	JP L5DFE
-     776   00:62E4                      ;
-     777   00:62E4  01                  L62E4:	db 01H
-     778   00:62E5  2D                  	db '-'
-     779   00:62E6  D7 62               	dw L62D7
-     780   00:62E8  EA 62               L62E8:	dw $ + 2
-     781   00:62EA  D1                  	POP DE
-     782   00:62EB  E1                  	POP HL
-     783   00:62EC  A7                  	AND A
-     784   00:62ED  ED 52               	SBC HL,DE
-     785   00:62EF  E5                  	PUSH HL
-     786   00:62F0  C3 FE 5D            	JP L5DFE
-     787   00:62F3                      ;
-     788   00:62F3  02                  L62F3:	db 02H
-     789   00:62F4  43 40               	db 'C@'
-     790   00:62F6  E4 62               	dw L62E4
-     791   00:62F8  FA 62               L62F8:	dw $ + 2
-     792   00:62FA  E1                  	POP HL
-     793   00:62FB  5E                  	LD E,(HL)
-     794   00:62FC  7B                  	LD A,E
-     795   00:62FD  17                  	RLA
-     796   00:62FE  9F                  	SBC A,A
-     797   00:62FF  57                  	LD D,A
-     798   00:6300  D5                  	PUSH DE
-     799   00:6301  C3 FE 5D            	JP L5DFE
-     800   00:6304                      ;
-     801   00:6304  05                  L6304:	db 05H
-     802   00:6305  44 2F 4D 4F 44      	db 'D/MOD'
-     803   00:630A  F3 62               	dw L62F3
-     804   00:630C  0E 63               L630C:	dw $ + 2
-     805   00:630E  D9                  	EXX
-     806   00:630F  E1                  	POP HL
-     807   00:6310  D1                  	POP DE
-     808   00:6311  C1                  	POP BC
-     809   00:6312  7C                  	LD A,H
-     810   00:6313  AA                  	XOR D
-     811   00:6314  08                  	EX AF,AF'
-     812   00:6315  7D                  	LD A,L
-     813   00:6316  A7                  	AND A
-     814   00:6317  F2 1C 63            	JP P,L631C
-     815   00:631A  ED 44               	NEG
-     816   00:631C  57                  L631C:	LD D,A
-     817   00:631D  60                  	LD H,B
-     818   00:631E  69                  	LD L,C
-     819   00:631F  7B                  	LD A,E
-     820   00:6320  5A                  	LD E,D
-     821   00:6321  A7                  	AND A
-     822   00:6322  F2 2F 63            	JP P,L632F
-     823   00:6325  2F                  	CPL
-     824   00:6326  21 00 00            	LD HL,0000H
-     825   00:6329  ED 42               	SBC HL,BC
-     826   00:632B  C2 2F 63            	JP NZ,L632F
-     827   00:632E  3C                  	INC A
-     828   00:632F  57                  L632F:	LD D,A
-     829   00:6330  CD 3C 63            	CALL L633C
-     830   00:6333  CD B7 62            	CALL L62B7
-     831   00:6336  E5                  	PUSH HL
-     832   00:6337  C5                  	PUSH BC
-     833   00:6338  D9                  	EXX
-     834   00:6339  C3 FE 5D            	JP L5DFE
-     835   00:633C                      ;
-     836   00:633C  06 10               L633C:	LD B,10H
-     837   00:633E  29                  L633E:	ADD HL,HL
-     838   00:633F  7A                  	LD A,D
-     839   00:6340  8A                  	ADC A,D
-     840   00:6341  57                  	LD D,A
-     841   00:6342  93                  	SUB E
-     842   00:6343  FA 48 63            	JP M,L6348
-     843   00:6346  2C                  	INC L
-     844   00:6347  57                  	LD D,A
-     845   00:6348  10 F4               L6348:	DJNZ L633E
-     846   00:634A  4A                  	LD C,D
-     847   00:634B  C9                  	RET
-     848   00:634C                      ;
-     849   00:634C  06                  L634C:	db 06H
-     850   00:634D  41 53 50 41 43 45   	db 'ASPACE'
-     851   00:6353  04 63               	dw L6304
-     852   00:6355  57 63               L6355:	dw $ + 2
-     853   00:6357  21 20 00            	LD HL,0020H
-     854   00:635A  E5                  	PUSH HL
-     855   00:635B  C3 FE 5D            	JP L5DFE
-     856   00:635E                      ;
-     857   00:635E  05                  L635E:	db 05H
-     858   00:635F  41 53 43 49 49      	db 'ASCII'
-     859   00:6364  4C 63               	dw L634C
-     860   00:6366  68 63               L6366:	dw $ + 2
-     861   00:6368  E1                  	POP HL
-     862   00:6369  3E 30               	LD A,30H
-     863   00:636B  85                  	ADD A,L
-     864   00:636C  FE 3A               	CP 3AH
-     865   00:636E  38 02               	JR C,L6372
-     866   00:6370  C6 07               	ADD A,07H
-     867   00:6372  6F                  L6372:	LD L,A
-     868   00:6373  E5                  	PUSH HL
-     869   00:6374  C3 FE 5D            	JP L5DFE
-     870   00:6377                      ;
-     871   00:6377  04                  L6377:	db 04H
-     872   00:6378  4E 45 58 54         	db 'NEXT'
-     873   00:637C  5E 63               	dw L635E
-     874   00:637E  0A 5E               	dw L5E0A
-     875   00:6380                      	dw L65DB, 00C3H, L6803, L65DB, L5DFE
-     875   00:6380  DB 65 C3 00 03 68 DB 65 FE 5D 
-     876   00:638A  EB 65 F2 5D         	dw L65EB, L5DF2
-     877   00:638E                      ;
-     878   00:638E  01                  L638E:	db 01H
-     879   00:638F  4A                  	db 'J'
-     880   00:6390  77 63               	dw L6377
-     881   00:6392  94 63               	dw $ + 2
-     882   00:6394  DD 6E 04            	LD L,(IX+4)
-     883   00:6397  DD 66 05            	LD H,(IX+5)
-     884   00:639A  E5                  	PUSH HL
-     885   00:639B  C3 FE 5D            	JP L5DFE
-     886   00:639E                      ;
-     887   00:639E  01                  L639E:	db 01H
-     888   00:639F  27                  	db 27H
-     889   00:63A0  8E 63               	dw L638E
-     890   00:63A2  0A 5E               	dw L5E0A
-     891   00:63A4                      	dw L6355, L6053, L651B, L6147, L6147
-     891   00:63A4  55 63 53 60 1B 65 47 61 47 61 
-     892   00:63AE  AC 60 C4 61         	dw L60AC, L61C4
-     893   00:63B2  0A                  	db 0AH
-     894   00:63B3  03 66 AC 60 C4 61   	dw L6603, L60AC, L61C4
-     895   00:63B9  03                  	db 03H
-     896   00:63BA  A0 68 F2 5D         	dw L68A0, L5DF2
-     897   00:63BE                      ;
-     898   00:63BE  05                  L63BE:	db 05H
-     899   00:63BF  44 4F 45 53 3E      	db 'DOES>'
-     900   00:63C4  9E 63               	dw L639E
-     901   00:63C6  0A 5E               	dw L5E0A
-     902   00:63C8                      	dw L6843, L6603, L5E9A, L62F8, L65DB, 0005H
-     902   00:63C8  43 68 03 66 9A 5E F8 62 DB 65 05 00 
-     903   00:63D4                      	dw L62DB, L62DB, L65A3, L685B
-     903   00:63D4  DB 62 DB 62 A3 65 5B 68 
-     904   00:63DC  DD 2B               	DEC IX
-     905   00:63DE  DD 70 00            	LD (IX+0),B
-     906   00:63E1  DD 2B               	DEC IX
-     907   00:63E3  DD 71 00            	LD (IX+0),C
-     908   00:63E6  EB                  	EX DE,HL
-     909   00:63E7  4E                  	LD C,(HL)
-     910   00:63E8  23                  	INC HL
-     911   00:63E9  46                  	LD B,(HL)
-     912   00:63EA  23                  	INC HL
-     913   00:63EB  E5                  	PUSH HL
-     914   00:63EC  C3 FE 5D            	JP L5DFE
-     915   00:63EF                      	;
-     916   00:63EF                      ;
-     917   00:63EF  07                  L63EF:	db 07H
-     918   00:63F0                      	db '<BUILDS'
-     918   00:63F0  3C 42 55 49 4C 44 53 
-     919   00:63F7  BE 63               	dw L63BE
-     920   00:63F9  0A 5E               	dw L5E0A
-     921   00:63FB                      	dw L65DB, 0000H, L6870, L5DF2
-     921   00:63FB  DB 65 00 00 70 68 F2 5D 
-     922   00:6403                      ;
-     923   00:6403  03                  L6403:	db 03H
-     924   00:6404  50 54 43            	db 'PTC'
-     925   00:6407  EF 63               	dw L63EF
-     926   00:6409  0A 5E               	dw L5E0A
-     927   00:640B                      	dw L6451, L65DB, 0040H, L62C4, L62DB
-     927   00:640B  51 64 DB 65 40 00 C4 62 DB 62 
-     928   00:6415                      	dw L65DB, 3C00H, L62DB, L65DB, 4020H
-     928   00:6415  DB 65 00 3C DB 62 DB 65 20 40 
-     929   00:641F  A3 65 F2 5D         	dw L65A3, L5DF2
-     930   00:6423                      ;
-     931   00:6423  03                  L6423:	db 03H
-     932   00:6424  2B 53 50            	db '+SP'
-     933   00:6427  03 64               	dw L6403
-     934   00:6429  2B 64               L6429:	dw $ + 2
-     935   00:642B  E1                  	POP HL
-     936   00:642C  39                  	ADD HL,SP
-     937   00:642D  E5                  	PUSH HL
-     938   00:642E  C3 FE 5D            	JP L5DFE
-     939   00:6431                      ;
-     940   00:6431  04                  L6431:	db 04H
-     941   00:6432  50 49 43 4B         	db 'PICK'
-     942   00:6436  23 64               	dw L6423
-     943   00:6438  0A 5E               	dw L5E0A
-     944   00:643A                      	dw L6596, L62E8, L65DB, 0002H, L62C4
-     944   00:643A  96 65 E8 62 DB 65 02 00 C4 62 
-     945   00:6444  29 64 47 61 F2 5D   	dw L6429, L6147, L5DF2
-     946   00:644A                      ;
-     947   00:644A  04                  L644A:	db 04H
-     948   00:644B  53 57 41 50         	db 'SWAP'
-     949   00:644F  31 64               	dw L6431
-     950   00:6451  53 64               L6451:	dw $ + 2
-     951   00:6453  E1                  	POP HL
-     952   00:6454  E3                  	EX (SP),HL
-     953   00:6455  E5                  	PUSH HL
-     954   00:6456  C3 FE 5D            	JP L5DFE
-     955   00:6459                      ;
-     956   00:6459  01                  L6459:	db 01H
-     957   00:645A  23                  	db '#'
-     958   00:645B  4A 64               	dw L644A
-     959   00:645D  0A 5E               L645D:	dw L5E0A
-     960   00:645F                      	dw L6508, L6220, L62F8, L630C, L6366
-     960   00:645F  08 65 20 62 F8 62 0C 63 66 63 
-     961   00:6469  51 64 F2 5D         	dw L6451, L5DF2
-     962   00:646D                      ;
-     963   00:646D  02                  L646D:	db 02H
-     964   00:646E  3C 23               	db '<#'
-     965   00:6470  59 64               	dw L6459
-     966   00:6472  74 64               L6472:	dw $ + 2
-     967   00:6474  E1                  	POP HL
-     968   00:6475  1E A0               	LD E,0A0H
-     969   00:6477  D5                  	PUSH DE
-     970   00:6478  E5                  	PUSH HL
-     971   00:6479  DD 2B               	DEC IX
-     972   00:647B  DD 74 00            	LD (IX+0),H
-     973   00:647E  C3 FE 5D            	JP L5DFE
-     974   00:6481                      ;
-     975   00:6481  03                  L6481:	db 03H
-     976   00:6482  41 42 53            	db 'ABS'
-     977   00:6485  6D 64               	dw L646D
-     978   00:6487  89 64               L6487:	dw $ + 2
-     979   00:6489  D1                  	POP DE
-     980   00:648A  CB 7A               	BIT 7,D
-     981   00:648C  28 07               	JR Z,L6495
-     982   00:648E  21 00 00            	LD HL,0000H
-     983   00:6491  A7                  	AND A
-     984   00:6492  ED 52               	SBC HL,DE
-     985   00:6494  EB                  	EX DE,HL
-     986   00:6495  D5                  L6495:	PUSH DE
-     987   00:6496  C3 FE 5D            	JP L5DFE
-     988   00:6499                      ;
-     989   00:6499  02                  L6499:	db 02H
-     990   00:649A  23 53               	db '#S'
-     991   00:649C  81 64               	dw L6481
-     992   00:649E  0A 5E               L649E:	dw L5E0A
-     993   00:64A0                      	dw L645D, L5E9A, L6156, L61EA
-     993   00:64A0  5D 64 9A 5E 56 61 EA 61 
-     994   00:64A8  F8                  	db 0F8H
-     995   00:64A9  08 5F F2 5D         	dw L5F08, L5DF2
-     996   00:64AD                      ;
-     997   00:64AD  04                  L64AD:	db 04H
-     998   00:64AE  53 49 47 4E         	db 'SIGN'
-     999   00:64B2  99 64               	dw L6499
-    1000   00:64B4  B6 64               L64B4:	dw $ + 2
-    1001   00:64B6  DD CB 00 7E         	BIT 7,(IX+0)
-    1002   00:64BA  28 03               	JR Z,L64BF
-    1003   00:64BC  2E 2D               	LD L,2DH
-    1004   00:64BE  E5                  	PUSH HL
-    1005   00:64BF  C3 FE 5D            L64BF:	JP L5DFE
-    1006   00:64C2                      ;
-    1007   00:64C2  04                  L64C2:	db 04H
-    1008   00:64C3  54 59 50 45         	db 'TYPE'
-    1009   00:64C7  AD 64               	dw L64AD
-    1010   00:64C9  CB 64               	dw $ + 2
-    1011   00:64CB  D9                  L64CB:	EXX
-    1012   00:64CC  E1                  L64CC:	POP HL
-    1013   00:64CD  7D                  	LD A,L
-    1014   00:64CE  CD 3A 03            	CALL VDCHAR
-    1015   00:64D1  A7                  	AND A
-    1016   00:64D2  F2 CC 64            	JP P,L64CC
-    1017   00:64D5  3E 08               	LD A,08H
-    1018   00:64D7  CD 3A 03            	CALL VDCHAR
-    1019   00:64DA  3E 20               	LD A,20H
-    1020   00:64DC  CD 3A 03            	CALL VDCHAR
-    1021   00:64DF  D9                  	EXX
-    1022   00:64E0  C3 FE 5D            	JP L5DFE
-    1023   00:64E3                      ;
-    1024   00:64E3  02                  L64E3:	db 02H
-    1025   00:64E4  23 3E               	db '#>'
-    1026   00:64E6  C2 64               	dw L64C2
-    1027   00:64E8  EA 64               	dw $ + 2
-    1028   00:64EA  DD 23               	INC IX
-    1029   00:64EC  C3 FE 5D            	JP L5DFE
-    1030   00:64EF                      ;
-    1031   00:64EF  F1 64               L64EF:	dw $+2
-    1032   00:64F1  DD 23               	INC IX
-    1033   00:64F3  C3 CB 64            	JP L64CB
-    1034   00:64F6                      ;
-    1035   00:64F6  01                  L64F6:	db 01H
-    1036   00:64F7  2E                  	db '.'
-    1037   00:64F8  E3 64               	dw L64E3
-    1038   00:64FA  0A 5E               	dw L5E0A
-    1039   00:64FC                      	dw L6472, L6487, L649E, L64B4, L64EF
-    1039   00:64FC  72 64 87 64 9E 64 B4 64 EF 64 
-    1040   00:6506  F2 5D               	dw L5DF2
-    1041   00:6508                      ;
-    1042   00:6508  0A                  L6508:	LD A,(BC)
-    1043   00:6509  65                  	LD H,L
-    1044   00:650A  21 00 00            	LD HL,0000H
-    1045   00:650D  E5                  	PUSH HL
-    1046   00:650E  C3 FE 5D            	JP L5DFE
-    1047   00:6511                      ;
-    1048   00:6511  07                  L6511:	db 07H
-    1049   00:6512                      	db 'CONTEXT'
-    1049   00:6512  43 4F 4E 54 45 58 54 
-    1050   00:6519  F6 64               	dw L64F6
-    1051   00:651B  1D 65               L651B:	dw $ + 2
-    1052   00:651D  21 D5 5D            	LD HL,L5DD5
-    1053   00:6520  E5                  	PUSH HL
-    1054   00:6521  C3 FE 5D            	JP L5DFE
-    1055   00:6524                      ;
-    1056   00:6524  07                  L6524:	db 07H
-    1057   00:6525                      	db 'CURRENT'
-    1057   00:6525  43 55 52 52 45 4E 54 
-    1058   00:652C  11 65               	dw L6511
-    1059   00:652E  30 65               L652E:	dw $ + 2
-    1060   00:6530  21 D7 5D            	LD HL,L5DD7
-    1061   00:6533  E5                  	PUSH HL
-    1062   00:6534  C3 FE 5D            	JP L5DFE
-    1063   00:6537                      ;
-    1064   00:6537  08                  L6537:	db 08H
-    1065   00:6538                      	db 'COMPILER'
-    1065   00:6538  43 4F 4D 50 49 4C 45 52 
-    1066   00:6540  24 65               	dw L6524
-    1067   00:6542  44 65               L6542:	dw $ + 2
-    1068   00:6544  21 D9 5D            	LD HL,L5DD9
-    1069   00:6547  E5                  	PUSH HL
-    1070   00:6548  C3 FE 5D            	JP L5DFE
-    1071   00:654B                      ;
-    1072   00:654B  05                  L654B:	db 05H
-    1073   00:654C  53 54 41 54 45      	db 'STATE'
-    1074   00:6551  37 65               	dw L6537
-    1075   00:6553  55 65               L6553:	dw $ + 2
-    1076   00:6555  21 DB 5D            	LD HL,L5DDB
-    1077   00:6558  E5                  	PUSH HL
-    1078   00:6559  C3 FE 5D            	JP L5DFE
-    1079   00:655C                      ;
-    1080   00:655C  07                  L655C:	db 07H
-    1081   00:655D                      	db '?SEARCH'
-    1081   00:655D  3F 53 45 41 52 43 48 
-    1082   00:6564  4B 65               	dw L654B
-    1083   00:6566  0A 5E               L6566:	dw L5E0A
-    1084   00:6568                      	dw L651B, L6147, L6147, L60AC, L5E9A
-    1084   00:6568  1B 65 47 61 47 61 AC 60 9A 5E 
-    1085   00:6572  C4 61               	dw L61C4
-    1086   00:6574  20                  	db 20H
-    1087   00:6575  F9 60 47 61 C4 61   	dw L60F9, L6147, L61C4
-    1088   00:657B  19                  	db 19H
-    1089   00:657C                      	dw L5F08, L6542, L6147, L60AC, L5E9A
-    1089   00:657C  08 5F 42 65 47 61 AC 60 9A 5E 
-    1090   00:6586  C4 61               	dw L61C4
-    1091   00:6588  06                  	db 06H
-    1092   00:6589  08 65 D8 61         	dw L6508, L61D8
-    1093   00:658D  03                  	db 03H
-    1094   00:658E                      	dw L6596, L6553, L65A3, L5DF2
-    1094   00:658E  96 65 53 65 A3 65 F2 5D 
-    1095   00:6596                      ;
-    1096   00:6596  98 65               L6596:	dw $+2
-    1097   00:6598  21 01 00            	LD HL,0001H
-    1098   00:659B  E5                  	PUSH HL
-    1099   00:659C  C3 FE 5D            	JP L5DFE
-    1100   00:659F                      ;
-    1101   00:659F  01                  L659F:	db 01H
-    1102   00:65A0  21                  	db '!'
-    1103   00:65A1  5C 65               	dw L655C
-    1104   00:65A3  A5 65               L65A3:	dw $ + 2
-    1105   00:65A5  E1                  	POP HL
-    1106   00:65A6  D1                  	POP DE
-    1107   00:65A7  73                  	LD (HL),E
-    1108   00:65A8  23                  	INC HL
-    1109   00:65A9  72                  	LD (HL),D
-    1110   00:65AA  C3 FE 5D            	JP L5DFE
-    1111   00:65AD                      ;
-    1112   00:65AD  07                  L65AD:	db 07H
-    1113   00:65AE                      	db '?NUMBER'
-    1113   00:65AE  3F 4E 55 4D 42 45 52 
-    1114   00:65B5  9F 65               	dw L659F
-    1115   00:65B7  0A 5E               L65B7:	dw L5E0A
-    1116   00:65B9  32 62 C4 61         	dw L6232, L61C4
-    1117   00:65BD  15                  	db 15H
-    1118   00:65BE  F9 60 47 61 C4 61   	dw L60F9, L6147, L61C4
-    1119   00:65C4  09                  	db 09H
-    1120   00:65C5                      	dw L65DB, L65DB, L65EB, L65EB, L6508
-    1120   00:65C5  DB 65 DB 65 EB 65 EB 65 08 65 
-    1121   00:65CF  D8 61               	dw L61D8
-    1122   00:65D1  03                  	db 03H
-    1123   00:65D2  96 65 F2 5D         	dw L6596, L5DF2
-    1124   00:65D6                      ;
-    1125   00:65D6  02                  L65D6:	db 02H
-    1126   00:65D7  2A 23               	db '*#'
-    1127   00:65D9  AD 65               	dw L65AD
-    1128   00:65DB  DD 65               L65DB:	dw $ + 2
-    1129   00:65DD  0A                  	LD A,(BC)
-    1130   00:65DE  5F                  	LD E,A
-    1131   00:65DF  03                  	INC BC
-    1132   00:65E0  0A                  	LD A,(BC)
-    1133   00:65E1  57                  	LD D,A
-    1134   00:65E2  03                  	INC BC
-    1135   00:65E3  D5                  	PUSH DE
-    1136   00:65E4  C3 FE 5D            	JP L5DFE
-    1137   00:65E7                      ;
-    1138   00:65E7  01                  L65E7:	db 01H
-    1139   00:65E8  2C                  	db ','
-    1140   00:65E9  D6 65               	dw L65D6
-    1141   00:65EB  ED 65               L65EB:	dw $ + 2
-    1142   00:65ED  D1                  	POP DE
-    1143   00:65EE  2A C9 5D            	LD HL,(L5DC9)
-    1144   00:65F1  73                  	LD (HL),E
-    1145   00:65F2  23                  	INC HL
-    1146   00:65F3  72                  	LD (HL),D
-    1147   00:65F4  23                  	INC HL
-    1148   00:65F5  22 C9 5D            	LD (L5DC9),HL
-    1149   00:65F8  C3 FE 5D            	JP L5DFE
-    1150   00:65FB                      ;
-    1151   00:65FB  05                  L65FB:	db 05H
-    1152   00:65FC  45 4E 54 52 59      	db 'ENTRY'
-    1153   00:6601  E7 65               	dw L65E7
-    1154   00:6603  0A 5E               L6603:	dw L5E0A
-    1155   00:6605                      	dw L652E, L6147, L6147, L5DF2
-    1155   00:6605  2E 65 47 61 47 61 F2 5D 
-    1156   00:660D                      ;
-    1157   00:660D  0F 66               L660D:	dw $+2
-    1158   00:660F  2A C9 5D            	LD HL,(L5DC9)
-    1159   00:6612  16 00               	LD D,00H
-    1160   00:6614  5E                  	LD E,(HL)
-    1161   00:6615  13                  	INC DE
-    1162   00:6616  D5                  	PUSH DE
-    1163   00:6617  C3 FE 5D            	JP L5DFE
-    1164   00:661A                      ;
-    1165   00:661A  02                  L661A:	db 02H
-    1166   00:661B  44 50               	db 'DP'
-    1167   00:661D  FB 65               	dw L65FB
-    1168   00:661F  21 66               L661F:	dw $ + 2
-    1169   00:6621  21 C9 5D            	LD HL,L5DC9
-    1170   00:6624  E5                  	PUSH HL
-    1171   00:6625  C3 FE 5D            	JP L5DFE
-    1172   00:6628                      ;
-    1173   00:6628  04                  L6628:	db 04H
-    1174   00:6629  48 45 52 45         	db 'HERE'
-    1175   00:662D  1A 66               	dw L661A
-    1176   00:662F  31 66               L662F:	dw $ + 2
-    1177   00:6631  2A C9 5D            	LD HL,(L5DC9)
-    1178   00:6634  E5                  	PUSH HL
-    1179   00:6635  C3 FE 5D            	JP L5DFE
-    1180   00:6638                      ;
-    1181   00:6638  02                  L6638:	db 02H
-    1182   00:6639  2B 21               	db '+!'
-    1183   00:663B  28 66               	dw L6628
-    1184   00:663D  3F 66               L663D:	dw $ + 2
-    1185   00:663F  E1                  	POP HL
-    1186   00:6640  D1                  	POP DE
-    1187   00:6641  7E                  	LD A,(HL)
-    1188   00:6642  83                  	ADD A,E
-    1189   00:6643  77                  	LD (HL),A
-    1190   00:6644  23                  	INC HL
-    1191   00:6645  7E                  	LD A,(HL)
-    1192   00:6646  8A                  	ADC A,D
-    1193   00:6647  77                  	LD (HL),A
-    1194   00:6648  C3 FE 5D            	JP L5DFE
-    1195   00:664B                      ;
-    1196   00:664B  02                  L664B:	db 02H
-    1197   00:664C  32 2B               	db '2+'
-    1198   00:664E  38 66               	dw L6638
-    1199   00:6650  52 66               L6650:	dw $ + 2
-    1200   00:6652  E1                  	POP HL
-    1201   00:6653  23                  	INC HL
-    1202   00:6654  23                  	INC HL
-    1203   00:6655  E5                  	PUSH HL
-    1204   00:6656  C3 FE 5D            	JP L5DFE
-    1205   00:6659                      ;
-    1206   00:6659  06                  L6659:	db 06H
-    1207   00:665A  43 52 45 41 54 45   	db 'CREATE'
-    1208   00:6660  4B 66               	dw L664B
-    1209   00:6662  0A 5E               L6662:	dw L5E0A
-    1210   00:6664                      	dw L6603, L6355, L6053, L662F, L652E
-    1210   00:6664  03 66 55 63 53 60 2F 66 2E 65 
-    1211   00:666E                      	dw L6147, L65A3, L660D, L661F, L663D
-    1211   00:666E  47 61 A3 65 0D 66 1F 66 3D 66 
-    1212   00:6678                      	dw L65EB, L662F, L6650, L65EB, L5DF2
-    1212   00:6678  EB 65 2F 66 50 66 EB 65 F2 5D 
-    1213   00:6682                      ;
-    1214   00:6682  84 66               L6682:	dw $+2
-    1215   00:6684  ED 5B CF 5D         	LD DE,(L5DCF)
-    1216   00:6688  26 00               	LD H,00H
-    1217   00:668A  1A                  	LD A,(DE)
-    1218   00:668B  6F                  	LD L,A
-    1219   00:668C  19                  	ADD HL,DE
-    1220   00:668D  11 03 00            	LD DE,0003H
-    1221   00:6690  19                  	ADD HL,DE
-    1222   00:6691  E5                  	PUSH HL
-    1223   00:6692  C3 FE 5D            	JP L5DFE
-    1224   00:6695                      ;
-    1225   00:6695  01                  L6695:	db 01H
-    1226   00:6696  3A                  	db ':'
-    1227   00:6697  59 66               	dw L6659
-    1228   00:6699  0A 5E               	dw L5E0A
-    1229   00:669B                      	dw L652E, L6147, L651B, L65A3, L6662
-    1229   00:669B  2E 65 47 61 1B 65 A3 65 62 66 
-    1230   00:66A5                      	dw L65DB, L5E0A, L6682, L65A3, L60F9
-    1230   00:66A5  DB 65 0A 5E 82 66 A3 65 F9 60 
-    1231   00:66AF  B3 61 F2 5D         	dw L61B3, L5DF2
-    1232   00:66B3                      ;
-    1233   00:66B3  01                  L66B3:	db 01H
-    1234   00:66B4  3B                  	db ';'	; (IMMEDIATE)
-    1235   00:66B5  00 00               	dw 0000H	; (FIM DO DICIONARIO CORRENTE)
-    1236   00:66B7  0A 5E               	dw L5E0A
-    1237   00:66B9                      	dw L65DB, L5DF2, L65EB, L60F9, L61A1
-    1237   00:66B9  DB 65 F2 5D EB 65 F9 60 A1 61 
-    1238   00:66C3  F2 5D               	dw L5DF2
-    1239   00:66C5                      ;
-    1240   00:66C5  08                  L66C5:	db 08H
-    1241   00:66C6                      	db '?EXECUTE'
-    1241   00:66C6  3F 45 58 45 43 55 54 45 
-    1242   00:66CE  95 66               	dw L6695
-    1243   00:66D0  0A 5E               L66D0:	dw L5E0A
-    1244   00:66D2                      	dw L6553, L6147, L6553, L61A1, L60F9
-    1244   00:66D2  53 65 47 61 53 65 A1 61 F9 60 
-    1245   00:66DC  47 61 F2 66 C4 61   	dw L6147, L66F2, L61C4
-    1246   00:66E2  08                  	db 08H
-    1247   00:66E3  EC 60 E7 68 D8 61   	dw L60EC, L68E7, L61D8
-    1248   00:66E9  03                  	db 03H
-    1249   00:66EA  EB 65 F2 5D         	dw L65EB, L5DF2
-    1250   00:66EE                      ;
-    1251   00:66EE  01                  L66EE:	db 01H
-    1252   00:66EF  3D                  	db '='
-    1253   00:66F0  C5 66               	dw L66C5
-    1254   00:66F2  F4 66               L66F2:	dw $ + 2
-    1255   00:66F4  E1                  	POP HL
-    1256   00:66F5  D1                  	POP DE
-    1257   00:66F6  A7                  	AND A
-    1258   00:66F7  ED 52               	SBC HL,DE
-    1259   00:66F9  11 00 00            	LD DE,0000H
-    1260   00:66FC  20 01               	JR NZ,L66FF
-    1261   00:66FE  1C                  	INC E
-    1262   00:66FF  D5                  L66FF:	PUSH DE
-    1263   00:6700  C3 FE 5D            	JP L5DFE
-    1264   00:6703                      ;
-    1265   00:6703  02                  L6703:	db 02H
-    1266   00:6704  2A 28               	db '*('
-    1267   00:6706  EE 66               	dw L66EE
-    1268   00:6708  0A 67               L6708:	dw $ + 2
-    1269   00:670A  0A                  	LD A,(BC)
-    1270   00:670B  57                  	LD D,A
-    1271   00:670C  03                  L670C:	INC BC
-    1272   00:670D  0A                  	LD A,(BC)
-    1273   00:670E  CD 3A 03            	CALL VDCHAR
-    1274   00:6711  15                  	DEC D
-    1275   00:6712  20 F8               	JR NZ,L670C
-    1276   00:6714  03                  	INC BC
-    1277   00:6715  C3 FE 5D            	JP L5DFE
-    1278   00:6718                      ;
-    1279   00:6718  05                  L6718:	db 05H
-    1280   00:6719  2B 4C 4F 4F 50      	db '+LOOP'	; (IMMEDIATE)
-    1281   00:671E  B3 66               	dw L66B3
-    1282   00:6720  0A 5E               	dw L5E0A
-    1283   00:6722                      	dw L65DB, L611A, L617E, L5DF2
-    1283   00:6722  DB 65 1A 61 7E 61 F2 5D 
-    1284   00:672A                      ;
-    1285   00:672A  2C 67               L672A:	dw $+2
-    1286   00:672C  DD 7E 03            	LD A,(IX+3)
-    1287   00:672F  DD 77 01            	LD (IX+1),A
-    1288   00:6732  DD 7E 02            	LD A,(IX+2)
-    1289   00:6735  DD 77 00            	LD (IX+0),A
-    1290   00:6738  C3 FE 5D            	JP L5DFE
-    1291   00:673B                      ;
-    1292   00:673B  05                  L673B:	db 05H
-    1293   00:673C  4C 45 41 56 45      	db 'LEAVE'	; (IMMEDIATE)
-    1294   00:6741  18 67               	dw L6718
-    1295   00:6743  0A 5E               	dw L5E0A
-    1296   00:6745                      	dw L65DB, L672A, L65EB, L5DF2
-    1296   00:6745  DB 65 2A 67 EB 65 F2 5D 
-    1297   00:674D                      ;
-    1298   00:674D  02                  L674D:	db 02H
-    1299   00:674E  44 4F               	db 'DO'	; (IMMEDIATE)
-    1300   00:6750  3B 67               	dw L673B
-    1301   00:6752  0A 5E               	dw L5E0A
-    1302   00:6754                      	dw L65DB, L6102, L67F6, L5DF2
-    1302   00:6754  DB 65 02 61 F6 67 F2 5D 
-    1303   00:675C                      ;
-    1304   00:675C  04                  L675C:	db 04H
-    1305   00:675D  4C 4F 4F 50         	db 'LOOP'	; (IMMEDIATE)
-    1306   00:6761  4D 67               	dw L674D
-    1307   00:6763  0A 5E               	dw L5E0A
-    1308   00:6765                      	dw L65DB, L6124, L617E, L5DF2
-    1308   00:6765  DB 65 24 61 7E 61 F2 5D 
-    1309   00:676D                      ;
-    1310   00:676D  02                  L676D:	db 02H
-    1311   00:676E  2E 22               	db '."'	; (IMMEDIATE)
-    1312   00:6770  5C 67               	dw L675C
-    1313   00:6772  0A 5E               	dw L5E0A
-    1314   00:6774                      	dw L65DB, L6708, L65EB, L65DB, 0022H
-    1314   00:6774  DB 65 08 67 EB 65 DB 65 22 00 
-    1315   00:677E                      	dw L6053, L662F, L62F8, L67E8, L661F
-    1315   00:677E  53 60 2F 66 F8 62 E8 67 1F 66 
-    1316   00:6788  3D 66 F2 5D         	dw L663D, L5DF2
-    1317   00:678C                      ;
-    1318   00:678C  05                  L678C:	db 05H
-    1319   00:678D  3B 43 4F 44 45      	db ';CODE'	; (IMMEDIATE)
-    1320   00:6792  6D 67               	dw L676D
-    1321   00:6794  0A 5E               	dw L5E0A
-    1322   00:6796                      	dw L65DB, L685B, L65EB, L60F9, L61A1
-    1322   00:6796  DB 65 5B 68 EB 65 F9 60 A1 61 
-    1323   00:67A0  F2 5D               	dw L5DF2
-    1324   00:67A2                      ;
-    1325   00:67A2  02                  L67A2:	db 02H
-    1326   00:67A3  49 46               	db 'IF'	; (IMMEDIATE)
-    1327   00:67A5  8C 67               	dw L678C
-    1328   00:67A7  0A 5E               	dw L5E0A
-    1329   00:67A9                      	dw L65DB, L61C4, L67F6, L6508, L6803
-    1329   00:67A9  DB 65 C4 61 F6 67 08 65 03 68 
-    1330   00:67B3  F2 5D               	dw L5DF2
-    1331   00:67B5                      ;
-    1332   00:67B5  04                  L67B5:	db 04H
-    1333   00:67B6  45 4C 53 45         	db 'ELSE'	; (IMMEDIATE)
-    1334   00:67BA  A2 67               	dw L67A2
-    1335   00:67BC  0A 5E               	dw L5E0A
-    1336   00:67BE                      	dw L65DB, L61D8, L67F6, L6508, L6803
-    1336   00:67BE  DB 65 D8 61 F6 67 08 65 03 68 
-    1337   00:67C8  51 64 D5 67 F2 5D   	dw L6451, L67D5, L5DF2
-    1338   00:67CE                      ;
-    1339   00:67CE  04                  L67CE:	db 04H
-    1340   00:67CF  54 48 45 4E         	db 'THEN'	; (IMMEDIATE)
-    1341   00:67D3  B5 67               	dw L67B5
-    1342   00:67D5  0A 5E               L67D5:	dw L5E0A
-    1343   00:67D7                      	dw L662F, L6818, L62E8, L6451, L6827
-    1343   00:67D7  2F 66 18 68 E8 62 51 64 27 68 
-    1344   00:67E1  F2 5D               	dw L5DF2
-    1345   00:67E3                      ;
-    1346   00:67E3  02                  L67E3:	db 02H
-    1347   00:67E4  31 2B               	db '1+'
-    1348   00:67E6  03 67               	dw L6703
-    1349   00:67E8  EA 67               L67E8:	dw $ + 2
-    1350   00:67EA  E1                  	POP HL
-    1351   00:67EB  23                  	INC HL
-    1352   00:67EC  E5                  	PUSH HL
-    1353   00:67ED  C3 FE 5D            	JP L5DFE
-    1354   00:67F0                      ;
-    1355   00:67F0  03                  L67F0:	db 03H
-    1356   00:67F1  44 4F 2C            	db 'DO,'
-    1357   00:67F4  E3 67               	dw L67E3
-    1358   00:67F6  0A 5E               L67F6:	dw L5E0A
-    1359   00:67F8  EB 65 2F 66 F2 5D   	dw L65EB, L662F, L5DF2
-    1360   00:67FE                      ;
-    1361   00:67FE  02                  L67FE:	db 02H
-    1362   00:67FF  43 2C               	db 'C,'
-    1363   00:6801  F0 67               	dw L67F0
-    1364   00:6803  05 68               L6803:	dw $ + 2
-    1365   00:6805  D1                  	POP DE
-    1366   00:6806  2A C9 5D            	LD HL,(L5DC9)
-    1367   00:6809  73                  	LD (HL),E
-    1368   00:680A  23                  	INC HL
-    1369   00:680B  22 C9 5D            	LD (L5DC9),HL
-    1370   00:680E  C3 FE 5D            	JP L5DFE
-    1371   00:6811                      ;
-    1372   00:6811  04                  L6811:	db 04H
-    1373   00:6812  4F 56 45 52         	db 'OVER'
-    1374   00:6816  FE 67               	dw L67FE
-    1375   00:6818  1A 68               L6818:	dw $ + 2
-    1376   00:681A  E1                  	POP HL
-    1377   00:681B  D1                  	POP DE
-    1378   00:681C  D5                  	PUSH DE
-    1379   00:681D  E5                  	PUSH HL
-    1380   00:681E  D5                  	PUSH DE
-    1381   00:681F  C3 FE 5D            	JP L5DFE
-    1382   00:6822                      ;
-    1383   00:6822  02                  L6822:	db 02H
-    1384   00:6823  43 21               	db 'C!'
-    1385   00:6825  11 68               	dw L6811
-    1386   00:6827  29 68               L6827:	dw $ + 2
-    1387   00:6829  E1                  	POP HL
-    1388   00:682A  D1                  	POP DE
-    1389   00:682B  73                  	LD (HL),E
-    1390   00:682C  C3 FE 5D            	JP L5DFE
-    1391   00:682F                      ;
-    1392   00:682F  02                  L682F:	db 02H
-    1393   00:6830  43 52               	db 'CR'
-    1394   00:6832  22 68               	dw L6822
-    1395   00:6834  36 68               	dw $ + 2
-    1396   00:6836  3E 0D               	LD A,0DH
-    1397   00:6838  CD 3A 03            	CALL VDCHAR
-    1398   00:683B  C3 FE 5D            	JP L5DFE
-    1399   00:683E                      ;
-    1400   00:683E  02                  L683E:	db 02H
-    1401   00:683F  52 3E               	db 'R>'
-    1402   00:6841  2F 68               	dw L682F
-    1403   00:6843  45 68               L6843:	dw $ + 2
-    1404   00:6845  DD 6E 00            	LD L,(IX+0)
-    1405   00:6848  DD 23               	INC IX
-    1406   00:684A  DD 66 00            	LD H,(IX+0)
-    1407   00:684D  DD 23               	INC IX
-    1408   00:684F  E5                  	PUSH HL
-    1409   00:6850  C3 FE 5D            	JP L5DFE
-    1410   00:6853                      ;
-    1411   00:6853  05                  L6853:	db 05H
-    1412   00:6854  53 43 4F 44 45      	db 'SCODE'
-    1413   00:6859  3E 68               	dw L683E
-    1414   00:685B  0A 5E               L685B:	dw L5E0A
-    1415   00:685D                      	dw L6843, L6682, L65A3, L5DF2
-    1415   00:685D  43 68 82 66 A3 65 F2 5D 
-    1416   00:6865                      ;
-    1417   00:6865  08                  L6865:	db 08H
-    1418   00:6866                      	db 'CONSTANT'
-    1418   00:6866  43 4F 4E 53 54 41 4E 54 
-    1419   00:686E  53 68               	dw L6853
-    1420   00:6870  0A 5E               L6870:	dw L5E0A
-    1421   00:6872  62 66 EB 65 5B 68   	dw L6662, L65EB, L685B
-    1422   00:6878  EB                  	EX DE,HL
-    1423   00:6879  5E                  	LD E,(HL)
-    1424   00:687A  23                  	INC HL
-    1425   00:687B  56                  	LD D,(HL)
-    1426   00:687C  D5                  	PUSH DE
-    1427   00:687D  C3 FE 5D            	JP L5DFE
-    1428   00:6880                      	;
-    1429   00:6880                      ;
-    1430   00:6880  08                  L6880:	db 08H
-    1431   00:6881                      	db 'VARIABLE'
-    1431   00:6881  56 41 52 49 41 42 4C 45 
-    1432   00:6889  65 68               	dw L6865
-    1433   00:688B  0A 5E               	dw L5E0A
-    1434   00:688D  70 68 5B 68         	dw L6870, L685B
-    1435   00:6891  D5                  	PUSH DE
-    1436   00:6892  C3 FE 5D            	JP L5DFE
-    1437   00:6895                      	;
-    1438   00:6895                      ;
-    1439   00:6895  08                  L6895:	db 08H
-    1440   00:6896                      	db 'QUESTION'
-    1440   00:6896  51 55 45 53 54 49 4F 4E 
-    1441   00:689E  80 68               	dw L6880
-    1442   00:68A0  A2 68               L68A0:	dw $ + 2
-    1443   00:68A2  2A C9 5D            	LD HL,(L5DC9)
-    1444   00:68A5  3E 0D               	LD A,0DH
-    1445   00:68A7  CD 3A 03            	CALL VDCHAR
-    1446   00:68AA  5E                  	LD E,(HL)
-    1447   00:68AB  23                  	INC HL
-    1448   00:68AC  CD 47 5E            	CALL L5E47
-    1449   00:68AF  3E 3F               	LD A,3FH
-    1450   00:68B1  CD 3A 03            	CALL VDCHAR
-    1451   00:68B4  3E 0D               	LD A,0DH
-    1452   00:68B6  CD 3A 03            	CALL VDCHAR
-    1453   00:68B9  3A D1 5D            L68B9:	LD A,(L5DD1)
-    1454   00:68BC  A7                  	AND A
-    1455   00:68BD  CA 61 5E            	JP Z,L5E61
-    1456   00:68C0  2A D7 5D            	LD HL,(L5DD7)
-    1457   00:68C3  5E                  	LD E,(HL)
-    1458   00:68C4  23                  	INC HL
-    1459   00:68C5  56                  	LD D,(HL)
-    1460   00:68C6  EB                  	EX DE,HL
-    1461   00:68C7  22 C9 5D            	LD (L5DC9),HL
-    1462   00:68CA  7E                  	LD A,(HL)
-    1463   00:68CB  85                  	ADD A,L
-    1464   00:68CC  6F                  	LD L,A
-    1465   00:68CD  30 01               	JR NC,L68D0
-    1466   00:68CF  24                  	INC H
-    1467   00:68D0  23                  L68D0:	INC HL
-    1468   00:68D1  23                  	INC HL
-    1469   00:68D2  7E                  	LD A,(HL)
-    1470   00:68D3  12                  	LD (DE),A
-    1471   00:68D4  2B                  	DEC HL
-    1472   00:68D5  1B                  	DEC DE
-    1473   00:68D6  7E                  	LD A,(HL)
-    1474   00:68D7  12                  	LD (DE),A
-    1475   00:68D8  C3 61 5E            	JP L5E61
-    1476   00:68DB                      ;
-    1477   00:68DB                      L68DB:	db 'PILHA VAZIA.'
-    1477   00:68DB  50 49 4C 48 41 20 56 41 5A 49 41 2E 
-    1478   00:68E7                      ;
-    1479   00:68E7  E9                  L68E7:	JP (HL)
-    1480   00:68E8  68                  	LD L,B
-    1481   00:68E9  2A C1 5D            	LD HL,(L5DC1)
-    1482   00:68EC  A7                  	AND A
-    1483   00:68ED  ED 72               	SBC HL,SP
-    1484   00:68EF  30 10               	JR NC,L6901
-    1485   00:68F1  1E 0C               	LD E,0CH
-    1486   00:68F3  3E 0D               	LD A,0DH
-    1487   00:68F5  CD 3A 03            	CALL VDCHAR
-    1488   00:68F8  21 DB 68            	LD HL,L68DB
-    1489   00:68FB  CD 47 5E            	CALL L5E47
-    1490   00:68FE  C3 B9 68            	JP L68B9
-    1491   00:6901                      ;
-    1492   00:6901  C3 FE 5D            L6901:	JP L5DFE
-    1493   00:6904                      ;
-    1494   00:6904                      L6904:	dw L5E0A, L5FA7, L6926, L690F, L61FF
-    1494   00:6904  0A 5E A7 5F 26 69 0F 69 FF 61 
-    1495   00:690E  F8                  	db 0F8H
-    1496   00:690F  11 69               L690F:	dw L6911
-    1497   00:6911                      ;
-    1498   00:6911  3E 4F               L6911:	LD A,4FH
-    1499   00:6913  CD 3A 03            	CALL VDCHAR
-    1500   00:6916  3E 4B               	LD A,4BH
-    1501   00:6918  CD 3A 03            	CALL VDCHAR
-    1502   00:691B  C3 FE 5D            	JP L5DFE
-    1503   00:691E                      ;
-    1504   00:691E  05                  L691E:	db 05H
-    1505   00:691F  4F 55 54 49 4E      	db 'OUTIN'
-    1506   00:6924  95 68               	dw L6895
-    1507   00:6926  0A 5E               L6926:	dw L5E0A
-    1508   00:6928                      	dw L6355, L6053, L6566, L61C4
-    1508   00:6928  55 63 53 60 66 65 C4 61 
-    1509   00:6930  12                  	db 12H
-    1510   00:6931  B7 65 56 61 C4 61   	dw L65B7, L6156, L61C4
-    1511   00:6937  17                  	db 17H
-    1512   00:6938  6E 61 47 61 C4 61   	dw L616E, L6147, L61C4
-    1513   00:693E  12                  	db 12H
-    1514   00:693F  FF 61               	dw L61FF
-    1515   00:6941  E7                  	db 0E7H
-    1516   00:6942                      	dw L66D0, L616E, L6147, L61C4
-    1516   00:6942  D0 66 6E 61 47 61 C4 61 
-    1517   00:694A  06                  	db 06H
-    1518   00:694B  FF 61               	dw L61FF
-    1519   00:694D  DB                  	db 0DBH
-    1520   00:694E  A0 68 F2 5D         	dw L68A0, L5DF2
-    1521   00:6952                      L6952:	dw 0000H, 0000H, 0000H, 0FFFFH, 0FBFFH
-    1521   00:6952  00 00 00 00 00 00 FF FF FF FB 
-    1522   00:695C  FF FF FF FF         	dw 0FFFFH, 0FFFFH
-    1523   00:6960                      ;
-    1524   00:6960  (0BA0)              	dephase
-    1525   00:0BA0                      ;
+     393   00:6077  18 F1               	JR TOKEN3
+     394   00:6079  C1                  TOKEN4:	POP BC
+     395   00:607A  18 0F               	JR TOKEN8
+     396   00:607C  3E 20               TOKEN5:	LD A,20H
+     397   00:607E  23                  	INC HL
+     398   00:607F  BE                  TOKEN6:	CP (HL)
+     399   00:6080  20 03               	JR NZ,TOKEN7
+     400   00:6082  23                  	INC HL
+     401   00:6083  18 FA               	JR TOKEN6
+     402   00:6085  7E                  TOKEN7:	LD A,(HL)
+     403   00:6086  0E 00               	LD C,00H
+     404   00:6088  B9                  	CP C
+     405   00:6089  20 08               	JR NZ,TOKEN9
+     406   00:608B  E5                  TOKEN8:	PUSH HL
+     407   00:608C  21 00 00            	LD HL,0000H
+     408   00:608F  22 CD 5D            	LD (PBUF),HL
+     409   00:6092  E1                  	POP HL
+     410   00:6093  22 CB 5D            TOKEN9:	LD (PLBP),HL
+     411   00:6096  78                  	LD A,B
+     412   00:6097  12                  	LD (DE),A
+     413   00:6098  13                  	INC DE
+     414   00:6099  E1                  	POP HL
+     415   00:609A  48                  	LD C,B
+     416   00:609B  06 00               	LD B,00H
+     417   00:609D  ED B0               	LDIR
+     418   00:609F  D9                  	EXX
+     419   00:60A0  C3 FE 5D            	JP ENDZ80
+     420   00:60A3                      ;
+     421   00:60A3  06                  CSEARCH:	db 06H
+     422   00:60A4  53 45 41 52 43 48   	db 'SEARCH'
+     423   00:60AA  4B 60               	dw CTOKEN
+     424   00:60AC  AE 60               SEARCH:	dw $+2
+     425   00:60AE  D9                  	EXX
+     426   00:60AF  E1                  	POP HL
+     427   00:60B0  E5                  SEARC1:	PUSH HL
+     428   00:60B1  ED 5B C9 5D         	LD DE,(PPD)
+     429   00:60B5  0E 00               	LD C,00H
+     430   00:60B7  1A                  	LD A,(DE)
+     431   00:60B8  BE                  	CP (HL)
+     432   00:60B9  20 11               	JR NZ,SEARC3
+     433   00:60BB  47                  	LD B,A
+     434   00:60BC  23                  SEARC2:	INC HL
+     435   00:60BD  13                  	INC DE
+     436   00:60BE  1A                  	LD A,(DE)
+     437   00:60BF  BE                  	CP (HL)
+     438   00:60C0  20 0A               	JR NZ,SEARC3
+     439   00:60C2  10 F8               	DJNZ SEARC2
+     440   00:60C4  11 03 00            	LD DE,0003H
+     441   00:60C7  19                  	ADD HL,DE
+     442   00:60C8  D1                  	POP DE
+     443   00:60C9  E5                  	PUSH HL
+     444   00:60CA  18 10               	JR SEARC4
+     445   00:60CC  E1                  SEARC3:	POP HL
+     446   00:60CD  16 00               	LD D,00H
+     447   00:60CF  5E                  	LD E,(HL)
+     448   00:60D0  13                  	INC DE
+     449   00:60D1  19                  	ADD HL,DE
+     450   00:60D2  5E                  	LD E,(HL)
+     451   00:60D3  23                  	INC HL
+     452   00:60D4  56                  	LD D,(HL)
+     453   00:60D5  EB                  	EX DE,HL
+     454   00:60D6  7C                  	LD A,H
+     455   00:60D7  B5                  	OR L
+     456   00:60D8  20 D6               	JR NZ,SEARC1
+     457   00:60DA  0E 01               	LD C,01H
+     458   00:60DC  06 00               SEARC4:	LD B,00H
+     459   00:60DE  C5                  	PUSH BC
+     460   00:60DF  D9                  	EXX
+     461   00:60E0  C3 FE 5D            	JP ENDZ80
+     462   00:60E3                      ;
+     463   00:60E3  06                  CEXECUT:	db 06H
+     464   00:60E4  45 58 45 43 55 54   	db 'EXECUT'
+     465   00:60EA  A3 60               	dw CSEARCH
+     466   00:60EC  EE 60               EXECUT:	dw $+2
+     467   00:60EE  E1                  	POP HL
+     468   00:60EF  C3 04 5E            	JP NEXTOP
+     469   00:60F2                      ;
+     470   00:60F2  04                  CMODE:	db 04H
+     471   00:60F3  4D 4F 44 45         	db 'MODE'
+     472   00:60F7  E3 60               	dw CEXECUT
+     473   00:60F9  FB 60               MODE:	dw $+2
+     474   00:60FB  21 D1 5D            	LD HL,VMODE
+     475   00:60FE  E5                  	PUSH HL
+     476   00:60FF  C3 FE 5D            	JP ENDZ80
+     477   00:6102                      ;
+     478   00:6102  04 61               INILOOP:	dw $+2
+     479   00:6104  E1                  	POP HL
+     480   00:6105  DD 75 FC            	LD (IX-4),L
+     481   00:6108  DD 74 FD            	LD (IX-3),H
+     482   00:610B  E1                  	POP HL
+     483   00:610C  DD 75 FE            	LD (IX-2),L
+     484   00:610F  DD 74 FF            	LD (IX-1),H
+     485   00:6112  11 FC FF            	LD DE,0FFFCH
+     486   00:6115  DD 19               	ADD IX,DE
+     487   00:6117  C3 FE 5D            	JP ENDZ80
+     488   00:611A                      ;
+     489   00:611A  1C 61               STEPLOOP:	dw $+2
+     490   00:611C  DD E5               	PUSH IX
+     491   00:611E  E1                  	POP HL
+     492   00:611F  D1                  	POP DE
+     493   00:6120  7B                  	LD A,E
+     494   00:6121  C3 2B 61            	JP L612B
+     495   00:6124                      ;
+     496   00:6124  26 61               ENDLOOP:	dw $+2
+     497   00:6126  DD E5               	PUSH IX
+     498   00:6128  E1                  	POP HL
+     499   00:6129  3E 01               	LD A,01H
+     500   00:612B  86                  L612B:	ADD A,(HL)
+     501   00:612C  77                  	LD (HL),A
+     502   00:612D  23                  	INC HL
+     503   00:612E  30 01               	JR NC,L6131
+     504   00:6130  34                  	INC (HL)
+     505   00:6131  56                  L6131:	LD D,(HL)
+     506   00:6132  23                  	INC HL
+     507   00:6133  96                  	SUB (HL)
+     508   00:6134  7A                  	LD A,D
+     509   00:6135  23                  	INC HL
+     510   00:6136  9E                  	SBC A,(HL)
+     511   00:6137  DA 01 62            	JP C,GWHIL1
+     512   00:613A  11 04 00            	LD DE,0004H
+     513   00:613D  DD 19               	ADD IX,DE
+     514   00:613F  03                  	INC BC
+     515   00:6140  C3 FE 5D            	JP ENDZ80
+     516   00:6143                      ;
+     517   00:6143  01                  CPEEK16:	db 01H
+     518   00:6144  40                  	db '@'
+     519   00:6145  F2 60               	dw CMODE
+     520   00:6147  49 61               PEEK16:	dw $+2
+     521   00:6149  E1                  	POP HL
+     522   00:614A  5E                  	LD E,(HL)
+     523   00:614B  23                  	INC HL
+     524   00:614C  56                  	LD D,(HL)
+     525   00:614D  D5                  	PUSH DE
+     526   00:614E  C3 FE 5D            	JP ENDZ80
+     527   00:6151                      ;
+     528   00:6151  02                  CIGUAL0:	db 02H
+     529   00:6152  30 3D               	db '0='
+     530   00:6154  43 61               	dw CPEEK16
+     531   00:6156  58 61               IGUAL0:	dw $+2
+     532   00:6158  E1                  	POP HL
+     533   00:6159  7D                  	LD A,L
+     534   00:615A  B4                  	OR H
+     535   00:615B  11 00 00            	LD DE,0000H
+     536   00:615E  20 01               	JR NZ,IGUL01
+     537   00:6160  13                  	INC DE
+     538   00:6161  D5                  IGUL01:	PUSH DE
+     539   00:6162  C3 FE 5D            	JP ENDZ80
+     540   00:6165                      ;
+     541   00:6165  06                  CFTOKEN:	db 06H
+     542   00:6166  46 54 4F 4B 45 4E   	db 'FTOKEN'
+     543   00:616C  51 61               	dw CIGUAL0
+     544   00:616E  70 61               FTOKEN:	dw $+2
+     545   00:6170  21 CD 5D            	LD HL,PBUF
+     546   00:6173  E5                  	PUSH HL
+     547   00:6174  C3 FE 5D            	JP ENDZ80
+     548   00:6177                      ;
+     549   00:6177  04                  CENDFOR:	db 04H
+     550   00:6178  45 4E 44 2C         	db 'END,'
+     551   00:617C  65 61               	dw CFTOKEN
+     552   00:617E  0A 5E               CLOSELOOP:	dw RUNFORTH
+     553   00:6180                      	dw INDIC16, HERE, MINUS, INDIC8, ENDFORTH
+     553   00:6180  EB 65 2F 66 E8 62 03 68 F2 5D 
+     554   00:618A                      ;
+     555   00:618A  01                  CI:	db 01H
+     556   00:618B  49                  	db 'I'
+     557   00:618C  77 61               	dw CENDFOR
+     558   00:618E  90 61               	dw $+2
+     559   00:6190  DD 6E 00            	LD L,(IX+0)
+     560   00:6193  DD 66 01            	LD H,(IX+1)
+     561   00:6196  E5                  	PUSH HL
+     562   00:6197  C3 FE 5D            	JP ENDZ80
+     563   00:619A                      ;
+     564   00:619A  04                  C0SET:	db 04H
+     565   00:619B  30 53 45 54         	db '0SET'
+     566   00:619F  8A 61               	dw CI
+     567   00:61A1  A3 61               SET0:	dw $+2
+     568   00:61A3  E1                  	POP HL
+     569   00:61A4  36 00               	LD (HL),00H
+     570   00:61A6  23                  	INC HL
+     571   00:61A7  36 00               	LD (HL),00H
+     572   00:61A9  C3 FE 5D            	JP ENDZ80
+     573   00:61AC                      ;
+     574   00:61AC  04                  C1SET:	db 04H
+     575   00:61AD  31 53 45 54         	db '1SET'
+     576   00:61B1  9A 61               	dw C0SET
+     577   00:61B3  B5 61               SET1:	dw $+2
+     578   00:61B5  E1                  	POP HL
+     579   00:61B6  36 01               	LD (HL),01H
+     580   00:61B8  23                  	INC HL
+     581   00:61B9  36 00               	LD (HL),00H
+     582   00:61BB  C3 FE 5D            	JP ENDZ80
+     583   00:61BE                      ;
+     584   00:61BE  03                  CGIF:	db 03H
+     585   00:61BF  2A 49 46            	db '*IF'
+     586   00:61C2  AC 61               	dw C1SET
+     587   00:61C4  C6 61               BRANCH0:	dw $+2
+     588   00:61C6  E1                  	POP HL
+     589   00:61C7  7D                  	LD A,L
+     590   00:61C8  B4                  	OR H
+     591   00:61C9  CA DA 61            	JP Z,GELSE1
+     592   00:61CC  03                  	INC BC
+     593   00:61CD  C3 FE 5D            	JP ENDZ80
+     594   00:61D0                      ;
+     595   00:61D0  05                  CGELSE:	db 05H
+     596   00:61D1  2A 45 4C 53 45      	db '*ELSE'
+     597   00:61D6  BE 61               	dw CGIF
+     598   00:61D8  DA 61               BRANCH:	dw $+2
+     599   00:61DA  0A                  GELSE1:	LD A,(BC)
+     600   00:61DB  81                  	ADD A,C
+     601   00:61DC  4F                  	LD C,A
+     602   00:61DD  30 01               	JR NC,GELSE2
+     603   00:61DF  04                  	INC B
+     604   00:61E0  C3 FE 5D            GELSE2:	JP ENDZ80
+     605   00:61E3                      ;
+     606   00:61E3  04                  CGEND:	db 04H
+     607   00:61E4  2A 45 4E 44         	db '*END'
+     608   00:61E8  D0 61               	dw CGELSE
+     609   00:61EA  EC 61               GEND:	dw $+2
+     610   00:61EC  E1                  	POP HL
+     611   00:61ED  7D                  	LD A,L
+     612   00:61EE  B4                  	OR H
+     613   00:61EF  CA 01 62            	JP Z,GWHIL1
+     614   00:61F2  03                  	INC BC
+     615   00:61F3  C3 FE 5D            	JP ENDZ80
+     616   00:61F6                      ;
+     617   00:61F6  06                  CGWHILE:	db 06H
+     618   00:61F7  2A 57 48 49 4C 45   	db '*WHILE'
+     619   00:61FD  E3 61               	dw CGEND
+     620   00:61FF  01 62               OFFSET:	dw $+2
+     621   00:6201  0A                  GWHIL1:	LD A,(BC)
+     622   00:6202  81                  	ADD A,C
+     623   00:6203  4F                  	LD C,A
+     624   00:6204  38 01               	JR C,GWHIL2
+     625   00:6206  05                  	DEC B
+     626   00:6207  C3 FE 5D            GWHIL2:	JP ENDZ80
+     627   00:620A                      ;
+     628   00:620A  04                  CPAGE:	db 04H
+     629   00:620B  50 41 47 45         	db 'PAGE'
+     630   00:620F  F6 61               	dw CGWHILE
+     631   00:6211  13 62               	dw $+2
+     632   00:6213  CD C9 01            	CALL VDCLS
+     633   00:6216  C3 FE 5D            	JP ENDZ80
+     634   00:6219                      ;
+     635   00:6219  04                  CBASE:	db 04H
+     636   00:621A  42 41 53 45         	db 'BASE'
+     637   00:621E  0A 62               	dw CPAGE
+     638   00:6220  22 62               BASE:	dw $+2
+     639   00:6222  21 D3 5D            	LD HL,VBASE
+     640   00:6225  E5                  	PUSH HL
+     641   00:6226  C3 FE 5D            	JP ENDZ80
+     642   00:6229                      ;
+     643   00:6229  06                  CNUMBER:	db 06H
+     644   00:622A  4E 55 4D 42 45 52   	db 'NUMBER'
+     645   00:6230  19 62               	dw CBASE
+     646   00:6232  34 62               NUMBER:	dw $+2
+     647   00:6234  D9                  	EXX
+     648   00:6235  2A C9 5D            	LD HL,(PPD)
+     649   00:6238  46                  	LD B,(HL)
+     650   00:6239  23                  	INC HL
+     651   00:623A  7E                  	LD A,(HL)
+     652   00:623B  FE 2D               	CP 2DH
+     653   00:623D  3E 00               	LD A,00H
+     654   00:623F  20 03               	JR NZ,NUMBR1
+     655   00:6241  3D                  	DEC A
+     656   00:6242  05                  	DEC B
+     657   00:6243  23                  	INC HL
+     658   00:6244  08                  NUMBR1:	EX AF,AF'
+     659   00:6245  11 00 00            	LD DE,0000H
+     660   00:6248  D5                  	PUSH DE
+     661   00:6249  D5                  	PUSH DE
+     662   00:624A  7E                  NUMBR2:	LD A,(HL)
+     663   00:624B  D6 30               	SUB 30H
+     664   00:624D  38 12               	JR C,NUMBR4
+     665   00:624F  FE 0A               	CP 0AH
+     666   00:6251  38 06               	JR C,NUMBR3
+     667   00:6253  FE 11               	CP 11H
+     668   00:6255  38 0A               	JR C,NUMBR4
+     669   00:6257  D6 07               	SUB 07H
+     670   00:6259  5F                  NUMBR3:	LD E,A
+     671   00:625A  3A D3 5D            	LD A,(VBASE)
+     672   00:625D  3D                  	DEC A
+     673   00:625E  BB                  	CP E
+     674   00:625F  30 05               	JR NC,NUMBR5
+     675   00:6261  E1                  NUMBR4:	POP HL
+     676   00:6262  D9                  	EXX
+     677   00:6263  C3 FE 5D            	JP ENDZ80
+     678   00:6266  E3                  NUMBR5:	EX (SP),HL
+     679   00:6267  EB                  	EX DE,HL
+     680   00:6268  C5                  	PUSH BC
+     681   00:6269  E5                  	PUSH HL
+     682   00:626A  01 00 08            	LD BC,0800H
+     683   00:626D  3C                  	INC A
+     684   00:626E  69                  	LD L,C
+     685   00:626F  61                  	LD H,C
+     686   00:6270  29                  NUMBR6:	ADD HL,HL
+     687   00:6271  8F                  	ADC A,A
+     688   00:6272  30 01               	JR NC,NUMBR7
+     689   00:6274  19                  	ADD HL,DE
+     690   00:6275  10 F9               NUMBR7:	DJNZ NUMBR6
+     691   00:6277  D1                  	POP DE
+     692   00:6278  19                  	ADD HL,DE
+     693   00:6279  C1                  	POP BC
+     694   00:627A  E3                  	EX (SP),HL
+     695   00:627B  23                  	INC HL
+     696   00:627C  10 CC               	DJNZ NUMBR2
+     697   00:627E  D1                  	POP DE
+     698   00:627F  E1                  	POP HL
+     699   00:6280  08                  	EX AF,AF'
+     700   00:6281  A7                  	AND A
+     701   00:6282  28 03               	JR Z,NUMBR8
+     702   00:6284  ED 52               	SBC HL,DE
+     703   00:6286  EB                  	EX DE,HL
+     704   00:6287  D5                  NUMBR8:	PUSH DE
+     705   00:6288  37                  	SCF
+     706   00:6289  F5                  	PUSH AF
+     707   00:628A  D9                  	EXX
+     708   00:628B  C3 FE 5D            	JP ENDZ80
+     709   00:628E                      ;
+     710   00:628E  7A                  TIMES1:	LD A,D
+     711   00:628F  A8                  	XOR B
+     712   00:6290  08                  	EX AF,AF'
+     713   00:6291  7A                  	LD A,D
+     714   00:6292  A7                  	AND A
+     715   00:6293  F2 9C 62            	JP P,L629C
+     716   00:6296  21 00 00            	LD HL,0000H
+     717   00:6299  ED 52               	SBC HL,DE
+     718   00:629B  EB                  	EX DE,HL
+     719   00:629C  60                  L629C:	LD H,B
+     720   00:629D  69                  	LD L,C
+     721   00:629E  78                  	LD A,B
+     722   00:629F  A7                  	AND A
+     723   00:62A0  F0                  	RET P
+     724   00:62A1  21 00 00            	LD HL,0000H
+     725   00:62A4  ED 42               	SBC HL,BC
+     726   00:62A6  C9                  	RET
+     727   00:62A7                      ;
+     728   00:62A7  7D                  TIMES2:	LD A,L
+     729   00:62A8  01 00 08            	LD BC,0800H
+     730   00:62AB  61                  	LD H,C
+     731   00:62AC  69                  	LD L,C
+     732   00:62AD  29                  L62AD:	ADD HL,HL
+     733   00:62AE  8F                  	ADC A,A
+     734   00:62AF  30 02               	JR NC,L62B3
+     735   00:62B1  19                  	ADD HL,DE
+     736   00:62B2  89                  	ADC A,C
+     737   00:62B3  10 F8               L62B3:	DJNZ L62AD
+     738   00:62B5  4F                  	LD C,A
+     739   00:62B6  C9                  	RET
+     740   00:62B7                      ;
+     741   00:62B7  08                  TIMES3:	EX AF,AF'
+     742   00:62B8  F0                  	RET P
+     743   00:62B9  EB                  	EX DE,HL
+     744   00:62BA  21 00 00            	LD HL,0000H
+     745   00:62BD  ED 52               	SBC HL,DE
+     746   00:62BF  C9                  	RET
+     747   00:62C0                      ;
+     748   00:62C0  01                  CTIMES:	db 01H
+     749   00:62C1  2A                  	db '*'
+     750   00:62C2  29 62               	dw CNUMBER
+     751   00:62C4  C6 62               TIMES:	dw $+2
+     752   00:62C6  D9                  	EXX
+     753   00:62C7  C1                  	POP BC
+     754   00:62C8  D1                  	POP DE
+     755   00:62C9  CD 8E 62            	CALL TIMES1
+     756   00:62CC  CD A7 62            	CALL TIMES2
+     757   00:62CF  CD B7 62            	CALL TIMES3
+     758   00:62D2  E5                  	PUSH HL
+     759   00:62D3  D9                  	EXX
+     760   00:62D4  C3 FE 5D            	JP ENDZ80
+     761   00:62D7                      ;
+     762   00:62D7  01                  CPLUS:	db 01H
+     763   00:62D8  2B                  	db '+'
+     764   00:62D9  C0 62               	dw CTIMES
+     765   00:62DB  DD 62               PLUS:	dw $+2
+     766   00:62DD  E1                  	POP HL
+     767   00:62DE  D1                  	POP DE
+     768   00:62DF  19                  	ADD HL,DE
+     769   00:62E0  E5                  	PUSH HL
+     770   00:62E1  C3 FE 5D            	JP ENDZ80
+     771   00:62E4                      ;
+     772   00:62E4  01                  CMINUS:	db 01H
+     773   00:62E5  2D                  	db '-'
+     774   00:62E6  D7 62               	dw CPLUS
+     775   00:62E8  EA 62               MINUS:	dw $+2
+     776   00:62EA  D1                  	POP DE
+     777   00:62EB  E1                  	POP HL
+     778   00:62EC  A7                  	AND A
+     779   00:62ED  ED 52               	SBC HL,DE
+     780   00:62EF  E5                  	PUSH HL
+     781   00:62F0  C3 FE 5D            	JP ENDZ80
+     782   00:62F3                      ;
+     783   00:62F3  02                  CPEEK8:	db 02H
+     784   00:62F4  43 40               	db 'C@'
+     785   00:62F6  E4 62               	dw CMINUS
+     786   00:62F8  FA 62               PEEK8:	dw $+2
+     787   00:62FA  E1                  	POP HL
+     788   00:62FB  5E                  	LD E,(HL)
+     789   00:62FC  7B                  	LD A,E
+     790   00:62FD  17                  	RLA
+     791   00:62FE  9F                  	SBC A,A
+     792   00:62FF  57                  	LD D,A
+     793   00:6300  D5                  	PUSH DE
+     794   00:6301  C3 FE 5D            	JP ENDZ80
+     795   00:6304                      ;
+     796   00:6304  05                  CDMOD:	db 05H
+     797   00:6305  44 2F 4D 4F 44      	db 'D/MOD'
+     798   00:630A  F3 62               	dw CPEEK8
+     799   00:630C  0E 63               DMOD:	dw $+2
+     800   00:630E  D9                  	EXX
+     801   00:630F  E1                  	POP HL
+     802   00:6310  D1                  	POP DE
+     803   00:6311  C1                  	POP BC
+     804   00:6312  7C                  	LD A,H
+     805   00:6313  AA                  	XOR D
+     806   00:6314  08                  	EX AF,AF'
+     807   00:6315  7D                  	LD A,L
+     808   00:6316  A7                  	AND A
+     809   00:6317  F2 1C 63            	JP P,L631C
+     810   00:631A  ED 44               	NEG
+     811   00:631C  57                  L631C:	LD D,A
+     812   00:631D  60                  	LD H,B
+     813   00:631E  69                  	LD L,C
+     814   00:631F  7B                  	LD A,E
+     815   00:6320  5A                  	LD E,D
+     816   00:6321  A7                  	AND A
+     817   00:6322  F2 2F 63            	JP P,L632F
+     818   00:6325  2F                  	CPL
+     819   00:6326  21 00 00            	LD HL,0000H
+     820   00:6329  ED 42               	SBC HL,BC
+     821   00:632B  C2 2F 63            	JP NZ,L632F
+     822   00:632E  3C                  	INC A
+     823   00:632F  57                  L632F:	LD D,A
+     824   00:6330  CD 3C 63            	CALL L633C
+     825   00:6333  CD B7 62            	CALL TIMES3
+     826   00:6336  E5                  	PUSH HL
+     827   00:6337  C5                  	PUSH BC
+     828   00:6338  D9                  	EXX
+     829   00:6339  C3 FE 5D            	JP ENDZ80
+     830   00:633C  06 10               L633C:	LD B,10H
+     831   00:633E  29                  L633E:	ADD HL,HL
+     832   00:633F  7A                  	LD A,D
+     833   00:6340  8A                  	ADC A,D
+     834   00:6341  57                  	LD D,A
+     835   00:6342  93                  	SUB E
+     836   00:6343  FA 48 63            	JP M,L6348
+     837   00:6346  2C                  	INC L
+     838   00:6347  57                  	LD D,A
+     839   00:6348  10 F4               L6348:	DJNZ L633E
+     840   00:634A  4A                  	LD C,D
+     841   00:634B  C9                  	RET
+     842   00:634C                      ;
+     843   00:634C  06                  CASPACE:	db 06H
+     844   00:634D  41 53 50 41 43 45   	db 'ASPACE'
+     845   00:6353  04 63               	dw CDMOD
+     846   00:6355  57 63               ASPACE:	dw $+2
+     847   00:6357  21 20 00            	LD HL,0020H
+     848   00:635A  E5                  	PUSH HL
+     849   00:635B  C3 FE 5D            	JP ENDZ80
+     850   00:635E                      ;
+     851   00:635E  05                  CASCII:	db 05H
+     852   00:635F  41 53 43 49 49      	db 'ASCII'
+     853   00:6364  4C 63               	dw CASPACE
+     854   00:6366  68 63               ASCII:	dw $+2
+     855   00:6368  E1                  	POP HL
+     856   00:6369  3E 30               	LD A,30H
+     857   00:636B  85                  	ADD A,L
+     858   00:636C  FE 3A               	CP 3AH
+     859   00:636E  38 02               	JR C,ASCI2
+     860   00:6370  C6 07               	ADD A,07H
+     861   00:6372  6F                  ASCI2:	LD L,A
+     862   00:6373  E5                  	PUSH HL
+     863   00:6374  C3 FE 5D            	JP ENDZ80
+     864   00:6377                      ;
+     865   00:6377  04                  CNEXT:	db 04H
+     866   00:6378  4E 45 58 54         	db 'NEXT'
+     867   00:637C  5E 63               	dw CASCII
+     868   00:637E  0A 5E               	dw RUNFORTH
+     869   00:6380                      	dw PUSHNR, 00C3H, INDIC8, PUSHNR, ENDZ80
+     869   00:6380  DB 65 C3 00 03 68 DB 65 FE 5D 
+     870   00:638A  EB 65 F2 5D         	dw INDIC16, ENDFORTH
+     871   00:638E                      ;
+     872   00:638E  01                  CJ:	db 01H
+     873   00:638F  4A                  	db 'J'
+     874   00:6390  77 63               	dw CNEXT
+     875   00:6392  94 63               	dw $+2
+     876   00:6394  DD 6E 04            	LD L,(IX+4)
+     877   00:6397  DD 66 05            	LD H,(IX+5)
+     878   00:639A  E5                  	PUSH HL
+     879   00:639B  C3 FE 5D            	JP ENDZ80
+     880   00:639E                      ;
+     881   00:639E  01                  CPESQ:	db 01H
+     882   00:639F  27                  	db 27H
+     883   00:63A0  8E 63               	dw CJ
+     884   00:63A2  0A 5E               	dw RUNFORTH
+     885   00:63A4                      	dw ASPACE, TOKEN, CONTEXT, PEEK16, PEEK16
+     885   00:63A4  55 63 53 60 1B 65 47 61 47 61 
+     886   00:63AE  AC 60 C4 61         	dw SEARCH, BRANCH0
+     887   00:63B2  0A                  	db 0AH
+     888   00:63B3  03 66 AC 60 C4 61   	dw ENTRY, SEARCH, BRANCH0
+     889   00:63B9  03                  	db 03H
+     890   00:63BA  A0 68 F2 5D         	dw QUESTION, ENDFORTH
+     891   00:63BE                      ;
+     892   00:63BE  05                  L63BE:	db 05H
+     893   00:63BF  44 4F 45 53 3E      	db 'DOES>'
+     894   00:63C4  9E 63               	dw CPESQ
+     895   00:63C6  0A 5E               	dw RUNFORTH
+     896   00:63C8                      	dw OUTRP, ENTRY, DUP, PEEK8, PUSHNR, 0005H
+     896   00:63C8  43 68 03 66 9A 5E F8 62 DB 65 05 00 
+     897   00:63D4                      	dw PLUS, PLUS, POKE16, SCODE
+     897   00:63D4  DB 62 DB 62 A3 65 5B 68 
+     898   00:63DC  DD 2B               	DEC IX
+     899   00:63DE  DD 70 00            	LD (IX+0),B
+     900   00:63E1  DD 2B               	DEC IX
+     901   00:63E3  DD 71 00            	LD (IX+0),C
+     902   00:63E6  EB                  	EX DE,HL
+     903   00:63E7  4E                  	LD C,(HL)
+     904   00:63E8  23                  	INC HL
+     905   00:63E9  46                  	LD B,(HL)
+     906   00:63EA  23                  	INC HL
+     907   00:63EB  E5                  	PUSH HL
+     908   00:63EC  C3 FE 5D            	JP ENDZ80
+     909   00:63EF                      	;
+     910   00:63EF                      ;
+     911   00:63EF  07                  L63EF:	db 07H
+     912   00:63F0                      	db '<BUILDS'
+     912   00:63F0  3C 42 55 49 4C 44 53 
+     913   00:63F7  BE 63               	dw L63BE
+     914   00:63F9  0A 5E               	dw RUNFORTH
+     915   00:63FB                      	dw PUSHNR, 0000H, CONSTANT, ENDFORTH
+     915   00:63FB  DB 65 00 00 70 68 F2 5D 
+     916   00:6403                      ;
+     917   00:6403  03                  CPTC:	db 03H
+     918   00:6404  50 54 43            	db 'PTC'
+     919   00:6407  EF 63               	dw L63EF
+     920   00:6409  0A 5E               	dw RUNFORTH
+     921   00:640B                      	dw SWAP, PUSHNR, 0040H, TIMES, PLUS
+     921   00:640B  51 64 DB 65 40 00 C4 62 DB 62 
+     922   00:6415                      	dw PUSHNR, 3C00H, PLUS, PUSHNR, 4020H
+     922   00:6415  DB 65 00 3C DB 62 DB 65 20 40 
+     923   00:641F  A3 65 F2 5D         	dw POKE16, ENDFORTH
+     924   00:6423                      ;
+     925   00:6423  03                  CADDSP:	db 03H
+     926   00:6424  2B 53 50            	db '+SP'
+     927   00:6427  03 64               	dw CPTC
+     928   00:6429  2B 64               ADDSP:	dw $+2
+     929   00:642B  E1                  	POP HL
+     930   00:642C  39                  	ADD HL,SP
+     931   00:642D  E5                  	PUSH HL
+     932   00:642E  C3 FE 5D            	JP ENDZ80
+     933   00:6431                      ;
+     934   00:6431  04                  CPICK:	db 04H
+     935   00:6432  50 49 43 4B         	db 'PICK'
+     936   00:6436  23 64               	dw CADDSP
+     937   00:6438  0A 5E               	dw RUNFORTH
+     938   00:643A                      	dw TRUE, MINUS, PUSHNR, 0002H, TIMES
+     938   00:643A  96 65 E8 62 DB 65 02 00 C4 62 
+     939   00:6444  29 64 47 61 F2 5D   	dw ADDSP, PEEK16, ENDFORTH
+     940   00:644A                      ;
+     941   00:644A  04                  CSWAP:	db 04H
+     942   00:644B  53 57 41 50         	db 'SWAP'
+     943   00:644F  31 64               	dw CPICK
+     944   00:6451  53 64               SWAP:	dw $+2
+     945   00:6453  E1                  	POP HL
+     946   00:6454  E3                  	EX (SP),HL
+     947   00:6455  E5                  	PUSH HL
+     948   00:6456  C3 FE 5D            	JP ENDZ80
+     949   00:6459                      ;
+     950   00:6459  01                  CSTRNUM:	db 01H
+     951   00:645A  23                  	db '#'
+     952   00:645B  4A 64               	dw CSWAP
+     953   00:645D  0A 5E               STRNUM:	dw RUNFORTH
+     954   00:645F                      	dw FALSE, BASE, PEEK8, DMOD, ASCII
+     954   00:645F  08 65 20 62 F8 62 0C 63 66 63 
+     955   00:6469  51 64 F2 5D         	dw SWAP, ENDFORTH
+     956   00:646D                      ;
+     957   00:646D  02                  CININUM:	db 02H
+     958   00:646E  3C 23               	db '<#'
+     959   00:6470  59 64               	dw CSTRNUM
+     960   00:6472  74 64               ININUM:	dw $+2
+     961   00:6474  E1                  	POP HL
+     962   00:6475  1E A0               	LD E,0A0H
+     963   00:6477  D5                  	PUSH DE
+     964   00:6478  E5                  	PUSH HL
+     965   00:6479  DD 2B               	DEC IX
+     966   00:647B  DD 74 00            	LD (IX+0),H
+     967   00:647E  C3 FE 5D            	JP ENDZ80
+     968   00:6481                      ;
+     969   00:6481  03                  CABS:	db 03H
+     970   00:6482  41 42 53            	db 'ABS'
+     971   00:6485  6D 64               	dw CININUM
+     972   00:6487  89 64               ABS:	dw $+2
+     973   00:6489  D1                  	POP DE
+     974   00:648A  CB 7A               	BIT 7,D
+     975   00:648C  28 07               	JR Z,ABS1
+     976   00:648E  21 00 00            	LD HL,0000H
+     977   00:6491  A7                  	AND A
+     978   00:6492  ED 52               	SBC HL,DE
+     979   00:6494  EB                  	EX DE,HL
+     980   00:6495  D5                  ABS1:	PUSH DE
+     981   00:6496  C3 FE 5D            	JP ENDZ80
+     982   00:6499                      ;
+     983   00:6499  02                  CNUMFMT:	db 02H
+     984   00:649A  23 53               	db '#S'
+     985   00:649C  81 64               	dw CABS
+     986   00:649E  0A 5E               NUMFMT:	dw RUNFORTH
+     987   00:64A0                      	dw STRNUM, DUP, IGUAL0, GEND
+     987   00:64A0  5D 64 9A 5E 56 61 EA 61 
+     988   00:64A8  F8                  	db 0F8H
+     989   00:64A9  08 5F F2 5D         	dw DROP, ENDFORTH
+     990   00:64AD                      ;
+     991   00:64AD  04                  CSIGN:	db 04H
+     992   00:64AE  53 49 47 4E         	db 'SIGN'
+     993   00:64B2  99 64               	dw CNUMFMT
+     994   00:64B4  B6 64               SIGN:	dw $+2
+     995   00:64B6  DD CB 00 7E         	BIT 7,(IX+0)
+     996   00:64BA  28 03               	JR Z,SIGN1
+     997   00:64BC  2E 2D               	LD L,2DH
+     998   00:64BE  E5                  	PUSH HL
+     999   00:64BF  C3 FE 5D            SIGN1:	JP ENDZ80
+    1000   00:64C2                      ;
+    1001   00:64C2  04                  CTYPE:	db 04H
+    1002   00:64C3  54 59 50 45         	db 'TYPE'
+    1003   00:64C7  AD 64               	dw CSIGN
+    1004   00:64C9  CB 64               	dw $+2
+    1005   00:64CB  D9                  TYPE:	EXX
+    1006   00:64CC  E1                  TYPE1:	POP HL
+    1007   00:64CD  7D                  	LD A,L
+    1008   00:64CE  CD 3A 03            	CALL VDCHAR
+    1009   00:64D1  A7                  	AND A
+    1010   00:64D2  F2 CC 64            	JP P,TYPE1
+    1011   00:64D5  3E 08               	LD A,08H
+    1012   00:64D7  CD 3A 03            	CALL VDCHAR
+    1013   00:64DA  3E 20               	LD A,20H
+    1014   00:64DC  CD 3A 03            	CALL VDCHAR
+    1015   00:64DF  D9                  	EXX
+    1016   00:64E0  C3 FE 5D            	JP ENDZ80
+    1017   00:64E3                      ;
+    1018   00:64E3  02                  CENDNUM:	db 02H
+    1019   00:64E4  23 3E               	db '#>'
+    1020   00:64E6  C2 64               	dw CTYPE
+    1021   00:64E8  EA 64               	dw $+2
+    1022   00:64EA  DD 23               	INC IX
+    1023   00:64EC  C3 FE 5D            	JP ENDZ80
+    1024   00:64EF                      ;
+    1025   00:64EF  F1 64               ENDFMT:	dw $+2
+    1026   00:64F1  DD 23               	INC IX
+    1027   00:64F3  C3 CB 64            	JP TYPE
+    1028   00:64F6                      ;
+    1029   00:64F6  01                  CDISPNUM:	db 01H
+    1030   00:64F7  2E                  	db '.'
+    1031   00:64F8  E3 64               	dw CENDNUM
+    1032   00:64FA  0A 5E               	dw RUNFORTH
+    1033   00:64FC                      	dw ININUM, ABS, NUMFMT, SIGN, ENDFMT
+    1033   00:64FC  72 64 87 64 9E 64 B4 64 EF 64 
+    1034   00:6506  F2 5D               	dw ENDFORTH
+    1035   00:6508                      ;
+    1036   00:6508  0A 65               FALSE:	dw $+2
+    1037   00:650A  21 00 00            	LD HL,0000H
+    1038   00:650D  E5                  	PUSH HL
+    1039   00:650E  C3 FE 5D            	JP ENDZ80
+    1040   00:6511                      ;
+    1041   00:6511  07                  CCONTEXT:	db 07H
+    1042   00:6512                      	db 'CONTEXT'
+    1042   00:6512  43 4F 4E 54 45 58 54 
+    1043   00:6519  F6 64               	dw CDISPNUM
+    1044   00:651B  1D 65               CONTEXT:	dw $+2
+    1045   00:651D  21 D5 5D            	LD HL,PUPDP
+    1046   00:6520  E5                  	PUSH HL
+    1047   00:6521  C3 FE 5D            	JP ENDZ80
+    1048   00:6524                      ;
+    1049   00:6524  07                  CCURRENT:	db 07H
+    1050   00:6525                      	db 'CURRENT'
+    1050   00:6525  43 55 52 52 45 4E 54 
+    1051   00:652C  11 65               	dw CCONTEXT
+    1052   00:652E  30 65               CURRENT:	dw $+2
+    1053   00:6530  21 D7 5D            	LD HL,PUPDC
+    1054   00:6533  E5                  	PUSH HL
+    1055   00:6534  C3 FE 5D            	JP ENDZ80
+    1056   00:6537                      ;
+    1057   00:6537  08                  CCOMPILER:	db 08H
+    1058   00:6538                      	db 'COMPILER'
+    1058   00:6538  43 4F 4D 50 49 4C 45 52 
+    1059   00:6540  24 65               	dw CCURRENT
+    1060   00:6542  44 65               COMPILER:	dw $+2
+    1061   00:6544  21 D9 5D            	LD HL,UPCC
+    1062   00:6547  E5                  	PUSH HL
+    1063   00:6548  C3 FE 5D            	JP ENDZ80
+    1064   00:654B                      ;
+    1065   00:654B  05                  CSTATE:	db 05H
+    1066   00:654C  53 54 41 54 45      	db 'STATE'
+    1067   00:6551  37 65               	dw CCOMPILER
+    1068   00:6553  55 65               STATE:	dw $+2
+    1069   00:6555  21 DB 5D            	LD HL,VSTATE
+    1070   00:6558  E5                  	PUSH HL
+    1071   00:6559  C3 FE 5D            	JP ENDZ80
+    1072   00:655C                      ;
+    1073   00:655C  07                  CEXISTS:	db 07H
+    1074   00:655D                      	db '?SEARCH'
+    1074   00:655D  3F 53 45 41 52 43 48 
+    1075   00:6564  4B 65               	dw CSTATE
+    1076   00:6566  0A 5E               EXISTS:	dw RUNFORTH
+    1077   00:6568                      	dw CONTEXT, PEEK16, PEEK16, SEARCH, DUP
+    1077   00:6568  1B 65 47 61 47 61 AC 60 9A 5E 
+    1078   00:6572  C4 61               	dw BRANCH0
+    1079   00:6574  20                  	db 20H
+    1080   00:6575  F9 60 47 61 C4 61   	dw MODE, PEEK16, BRANCH0
+    1081   00:657B  19                  	db 19H
+    1082   00:657C                      	dw DROP, COMPILER, PEEK16, SEARCH, DUP
+    1082   00:657C  08 5F 42 65 47 61 AC 60 9A 5E 
+    1083   00:6586  C4 61               	dw BRANCH0
+    1084   00:6588  06                  	db 06H
+    1085   00:6589  08 65 D8 61         	dw FALSE, BRANCH
+    1086   00:658D  03                  	db 03H
+    1087   00:658E                      	dw TRUE, STATE, POKE16, ENDFORTH
+    1087   00:658E  96 65 53 65 A3 65 F2 5D 
+    1088   00:6596                      ;
+    1089   00:6596  98 65               TRUE:	dw $+2
+    1090   00:6598  21 01 00            	LD HL,0001H
+    1091   00:659B  E5                  	PUSH HL
+    1092   00:659C  C3 FE 5D            	JP ENDZ80
+    1093   00:659F                      ;
+    1094   00:659F  01                  CPOKE16:	db 01H
+    1095   00:65A0  21                  	db '!'
+    1096   00:65A1  5C 65               	dw CEXISTS
+    1097   00:65A3  A5 65               POKE16:	dw $+2
+    1098   00:65A5  E1                  	POP HL
+    1099   00:65A6  D1                  	POP DE
+    1100   00:65A7  73                  	LD (HL),E
+    1101   00:65A8  23                  	INC HL
+    1102   00:65A9  72                  	LD (HL),D
+    1103   00:65AA  C3 FE 5D            	JP ENDZ80
+    1104   00:65AD                      ;
+    1105   00:65AD  07                  CISNUMBER:	db 07H
+    1106   00:65AE                      	db '?NUMBER'
+    1106   00:65AE  3F 4E 55 4D 42 45 52 
+    1107   00:65B5  9F 65               	dw CPOKE16
+    1108   00:65B7  0A 5E               ISNUMBER:	dw RUNFORTH
+    1109   00:65B9  32 62 C4 61         	dw NUMBER, BRANCH0
+    1110   00:65BD  15                  	db 15H
+    1111   00:65BE  F9 60 47 61 C4 61   	dw MODE, PEEK16, BRANCH0
+    1112   00:65C4  09                  	db 09H
+    1113   00:65C5                      	dw PUSHNR, PUSHNR, INDIC16, INDIC16, FALSE
+    1113   00:65C5  DB 65 DB 65 EB 65 EB 65 08 65 
+    1114   00:65CF  D8 61               	dw BRANCH
+    1115   00:65D1  03                  	db 03H
+    1116   00:65D2  96 65 F2 5D         	dw TRUE, ENDFORTH
+    1117   00:65D6                      ;
+    1118   00:65D6  02                  CPUSHN:	db 02H
+    1119   00:65D7  2A 23               	db '*#'
+    1120   00:65D9  AD 65               	dw CISNUMBER
+    1121   00:65DB  DD 65               PUSHNR:	dw $+2
+    1122   00:65DD  0A                  	LD A,(BC)
+    1123   00:65DE  5F                  	LD E,A
+    1124   00:65DF  03                  	INC BC
+    1125   00:65E0  0A                  	LD A,(BC)
+    1126   00:65E1  57                  	LD D,A
+    1127   00:65E2  03                  	INC BC
+    1128   00:65E3  D5                  	PUSH DE
+    1129   00:65E4  C3 FE 5D            	JP ENDZ80
+    1130   00:65E7                      ;
+    1131   00:65E7                      ; INCLUI UM VALOR 16 BITS NO DICIONARIO
+    1132   00:65E7  01                  CINDIC16:	db 01H
+    1133   00:65E8  2C                  	db ','
+    1134   00:65E9  D6 65               	dw CPUSHN
+    1135   00:65EB  ED 65               INDIC16:	dw $+2
+    1136   00:65ED  D1                  	POP DE
+    1137   00:65EE  2A C9 5D            	LD HL,(PPD)
+    1138   00:65F1  73                  	LD (HL),E
+    1139   00:65F2  23                  	INC HL
+    1140   00:65F3  72                  	LD (HL),D
+    1141   00:65F4  23                  	INC HL
+    1142   00:65F5  22 C9 5D            	LD (PPD),HL
+    1143   00:65F8  C3 FE 5D            	JP ENDZ80
+    1144   00:65FB                      ;
+    1145   00:65FB  05                  CENTRY:	db 05H
+    1146   00:65FC  45 4E 54 52 59      	db 'ENTRY'
+    1147   00:6601  E7 65               	dw CINDIC16
+    1148   00:6603  0A 5E               ENTRY:	dw RUNFORTH
+    1149   00:6605                      	dw CURRENT, PEEK16, PEEK16, ENDFORTH
+    1149   00:6605  2E 65 47 61 47 61 F2 5D 
+    1150   00:660D                      ;
+    1151   00:660D                      ; OBTEM A PROXIMA POSICAO DE MEMORIA APONTADA POR "PPD"
+    1152   00:660D  0F 66               NEXTPPD:	dw $+2
+    1153   00:660F  2A C9 5D            	LD HL,(PPD)
+    1154   00:6612  16 00               	LD D,00H
+    1155   00:6614  5E                  	LD E,(HL)
+    1156   00:6615  13                  	INC DE
+    1157   00:6616  D5                  	PUSH DE
+    1158   00:6617  C3 FE 5D            	JP ENDZ80
+    1159   00:661A                      ;
+    1160   00:661A                      ; OBTEM O ENDERECO DE "PPD"
+    1161   00:661A  02                  CDP:	db 02H
+    1162   00:661B  44 50               	db 'DP'
+    1163   00:661D  FB 65               	dw CENTRY
+    1164   00:661F  21 66               DP:	dw $+2
+    1165   00:6621  21 C9 5D            	LD HL,PPD
+    1166   00:6624  E5                  	PUSH HL
+    1167   00:6625  C3 FE 5D            	JP ENDZ80
+    1168   00:6628                      ;
+    1169   00:6628  04                  CHERE:	db 04H
+    1170   00:6629  48 45 52 45         	db 'HERE'
+    1171   00:662D  1A 66               	dw CDP
+    1172   00:662F  31 66               HERE:	dw $+2
+    1173   00:6631  2A C9 5D            	LD HL,(PPD)
+    1174   00:6634  E5                  	PUSH HL
+    1175   00:6635  C3 FE 5D            	JP ENDZ80
+    1176   00:6638                      ;
+    1177   00:6638  02                  CSUMMEM:	db 02H
+    1178   00:6639  2B 21               	db '+!'
+    1179   00:663B  28 66               	dw CHERE
+    1180   00:663D  3F 66               SUMMEM:	dw $+2
+    1181   00:663F  E1                  	POP HL
+    1182   00:6640  D1                  	POP DE
+    1183   00:6641  7E                  	LD A,(HL)
+    1184   00:6642  83                  	ADD A,E
+    1185   00:6643  77                  	LD (HL),A
+    1186   00:6644  23                  	INC HL
+    1187   00:6645  7E                  	LD A,(HL)
+    1188   00:6646  8A                  	ADC A,D
+    1189   00:6647  77                  	LD (HL),A
+    1190   00:6648  C3 FE 5D            	JP ENDZ80
+    1191   00:664B                      ;
+    1192   00:664B  02                  CPLUS2:	db 02H
+    1193   00:664C  32 2B               	db '2+'
+    1194   00:664E  38 66               	dw CSUMMEM
+    1195   00:6650  52 66               PLUS2:	dw $+2
+    1196   00:6652  E1                  	POP HL
+    1197   00:6653  23                  	INC HL
+    1198   00:6654  23                  	INC HL
+    1199   00:6655  E5                  	PUSH HL
+    1200   00:6656  C3 FE 5D            	JP ENDZ80
+    1201   00:6659                      ;
+    1202   00:6659  06                  CCREATE:	db 06H
+    1203   00:665A  43 52 45 41 54 45   	db 'CREATE'
+    1204   00:6660  4B 66               	dw CPLUS2
+    1205   00:6662  0A 5E               CREATE:	dw RUNFORTH
+    1206   00:6664                      	dw ENTRY, ASPACE, TOKEN, HERE, CURRENT
+    1206   00:6664  03 66 55 63 53 60 2F 66 2E 65 
+    1207   00:666E                      	dw PEEK16, POKE16, NEXTPPD, DP, SUMMEM
+    1207   00:666E  47 61 A3 65 0D 66 1F 66 3D 66 
+    1208   00:6678                      	dw INDIC16, HERE, PLUS2, INDIC16, ENDFORTH
+    1208   00:6678  EB 65 2F 66 50 66 EB 65 F2 5D 
+    1209   00:6682                      ;
+    1210   00:6682  84 66               RESERVE:	dw $+2
+    1211   00:6684  ED 5B CF 5D         	LD DE,(UPDC)
+    1212   00:6688  26 00               	LD H,00H
+    1213   00:668A  1A                  	LD A,(DE)
+    1214   00:668B  6F                  	LD L,A
+    1215   00:668C  19                  	ADD HL,DE
+    1216   00:668D  11 03 00            	LD DE,0003H
+    1217   00:6690  19                  	ADD HL,DE
+    1218   00:6691  E5                  	PUSH HL
+    1219   00:6692  C3 FE 5D            	JP ENDZ80
+    1220   00:6695                      ;
+    1221   00:6695  01                  CINICMD:	db 01H
+    1222   00:6696  3A                  	db ':'
+    1223   00:6697  59 66               	dw CCREATE
+    1224   00:6699  0A 5E               	dw RUNFORTH
+    1225   00:669B                      	dw CURRENT, PEEK16, CONTEXT, POKE16, CREATE
+    1225   00:669B  2E 65 47 61 1B 65 A3 65 62 66 
+    1226   00:66A5                      	dw PUSHNR, RUNFORTH, RESERVE, POKE16, MODE
+    1226   00:66A5  DB 65 0A 5E 82 66 A3 65 F9 60 
+    1227   00:66AF  B3 61 F2 5D         	dw SET1, ENDFORTH
+    1228   00:66B3                      ;
+    1229   00:66B3  01                  CENDCMD:	db 01H
+    1230   00:66B4  3B                  	db ';'	; (IMMEDIATE)
+    1231   00:66B5  00 00               	dw 0000H	; (FIM DO DICIONARIO CORRENTE)
+    1232   00:66B7  0A 5E               	dw RUNFORTH
+    1233   00:66B9                      	dw PUSHNR, ENDFORTH, INDIC16, MODE, SET0
+    1233   00:66B9  DB 65 F2 5D EB 65 F9 60 A1 61 
+    1234   00:66C3  F2 5D               	dw ENDFORTH
+    1235   00:66C5                      ;
+    1236   00:66C5                      ; : ?EXECUTE STATE @ STATE 0SET MODE @ = IF EXECUTE ZERO {VZ} ELSE , THEN ;
+    1237   00:66C5  08                  CINEXECUTE:	db 08H
+    1238   00:66C6                      	db '?EXECUTE'
+    1238   00:66C6  3F 45 58 45 43 55 54 45 
+    1239   00:66CE  95 66               	dw CINICMD
+    1240   00:66D0  0A 5E               INEXECUTE:	dw RUNFORTH
+    1241   00:66D2                      	dw STATE, PEEK16, STATE, SET0, MODE
+    1241   00:66D2  53 65 47 61 53 65 A1 61 F9 60 
+    1242   00:66DC  47 61 F2 66 C4 61   	dw PEEK16, IGUAL, BRANCH0
+    1243   00:66E2  08                  	db 08H
+    1244   00:66E3  EC 60 E7 68 D8 61   	dw EXECUT, PVAZIA, BRANCH
+    1245   00:66E9  03                  	db 03H
+    1246   00:66EA  EB 65 F2 5D         	dw INDIC16, ENDFORTH
+    1247   00:66EE                      ;
+    1248   00:66EE  01                  CIGUAL:	db 01H
+    1249   00:66EF  3D                  	db '='
+    1250   00:66F0  C5 66               	dw CINEXECUTE
+    1251   00:66F2  F4 66               IGUAL:	dw $+2
+    1252   00:66F4  E1                  	POP HL
+    1253   00:66F5  D1                  	POP DE
+    1254   00:66F6  A7                  	AND A
+    1255   00:66F7  ED 52               	SBC HL,DE
+    1256   00:66F9  11 00 00            	LD DE,0000H
+    1257   00:66FC  20 01               	JR NZ,IGUAL1
+    1258   00:66FE  1C                  	INC E
+    1259   00:66FF  D5                  IGUAL1:	PUSH DE
+    1260   00:6700  C3 FE 5D            	JP ENDZ80
+    1261   00:6703                      ;
+    1262   00:6703  02                  CPRINT:	db 02H
+    1263   00:6704  2A 28               	db '*('
+    1264   00:6706  EE 66               	dw CIGUAL
+    1265   00:6708  0A 67               PRINT:	dw $+2
+    1266   00:670A  0A                  	LD A,(BC)
+    1267   00:670B  57                  	LD D,A
+    1268   00:670C  03                  PRINT1:	INC BC
+    1269   00:670D  0A                  	LD A,(BC)
+    1270   00:670E  CD 3A 03            	CALL VDCHAR
+    1271   00:6711  15                  	DEC D
+    1272   00:6712  20 F8               	JR NZ,PRINT1
+    1273   00:6714  03                  	INC BC
+    1274   00:6715  C3 FE 5D            	JP ENDZ80
+    1275   00:6718                      ;
+    1276   00:6718  05                  CSTEPLOOP:	db 05H
+    1277   00:6719  2B 4C 4F 4F 50      	db '+LOOP'	; (IMMEDIATE)
+    1278   00:671E  B3 66               	dw CENDCMD
+    1279   00:6720  0A 5E               	dw RUNFORTH
+    1280   00:6722                      	dw PUSHNR, STEPLOOP, CLOSELOOP, ENDFORTH
+    1280   00:6722  DB 65 1A 61 7E 61 F2 5D 
+    1281   00:672A                      ;
+    1282   00:672A  2C 67               LEAVELOOP:	dw $+2
+    1283   00:672C  DD 7E 03            	LD A,(IX+3)
+    1284   00:672F  DD 77 01            	LD (IX+1),A
+    1285   00:6732  DD 7E 02            	LD A,(IX+2)
+    1286   00:6735  DD 77 00            	LD (IX+0),A
+    1287   00:6738  C3 FE 5D            	JP ENDZ80
+    1288   00:673B                      ;
+    1289   00:673B  05                  CLEAVE:	db 05H
+    1290   00:673C  4C 45 41 56 45      	db 'LEAVE'	; (IMMEDIATE)
+    1291   00:6741  18 67               	dw CSTEPLOOP
+    1292   00:6743  0A 5E               	dw RUNFORTH
+    1293   00:6745                      	dw PUSHNR, LEAVELOOP, INDIC16, ENDFORTH
+    1293   00:6745  DB 65 2A 67 EB 65 F2 5D 
+    1294   00:674D                      ;
+    1295   00:674D  02                  CDO:	db 02H
+    1296   00:674E  44 4F               	db 'DO'	; (IMMEDIATE)
+    1297   00:6750  3B 67               	dw CLEAVE
+    1298   00:6752  0A 5E               	dw RUNFORTH
+    1299   00:6754                      	dw PUSHNR, INILOOP, INDIC, ENDFORTH
+    1299   00:6754  DB 65 02 61 F6 67 F2 5D 
+    1300   00:675C                      ;
+    1301   00:675C  04                  CLOOP:	db 04H
+    1302   00:675D  4C 4F 4F 50         	db 'LOOP'	; (IMMEDIATE)
+    1303   00:6761  4D 67               	dw CDO
+    1304   00:6763  0A 5E               	dw RUNFORTH
+    1305   00:6765                      	dw PUSHNR, ENDLOOP, CLOSELOOP, ENDFORTH
+    1305   00:6765  DB 65 24 61 7E 61 F2 5D 
+    1306   00:676D                      ;
+    1307   00:676D  02                  CCMPRINT:	db 02H
+    1308   00:676E  2E 22               	db '."'	; (IMMEDIATE)
+    1309   00:6770  5C 67               	dw CLOOP
+    1310   00:6772  0A 5E               	dw RUNFORTH
+    1311   00:6774                      	dw PUSHNR, PRINT, INDIC16, PUSHNR, 0022H
+    1311   00:6774  DB 65 08 67 EB 65 DB 65 22 00 
+    1312   00:677E                      	dw TOKEN, HERE, PEEK8, PLUS1, DP
+    1312   00:677E  53 60 2F 66 F8 62 E8 67 1F 66 
+    1313   00:6788  3D 66 F2 5D         	dw SUMMEM, ENDFORTH
+    1314   00:678C                      ;
+    1315   00:678C  05                  CINIZ80:	db 05H
+    1316   00:678D  3B 43 4F 44 45      	db ';CODE'	; (IMMEDIATE)
+    1317   00:6792  6D 67               	dw CCMPRINT
+    1318   00:6794  0A 5E               	dw RUNFORTH
+    1319   00:6796                      	dw PUSHNR, SCODE, INDIC16, MODE, SET0
+    1319   00:6796  DB 65 5B 68 EB 65 F9 60 A1 61 
+    1320   00:67A0  F2 5D               	dw ENDFORTH
+    1321   00:67A2                      ;
+    1322   00:67A2  02                  CIF:	db 02H
+    1323   00:67A3  49 46               	db 'IF'	; (IMMEDIATE)
+    1324   00:67A5  8C 67               	dw CINIZ80
+    1325   00:67A7  0A 5E               	dw RUNFORTH
+    1326   00:67A9                      	dw PUSHNR, BRANCH0, INDIC, FALSE, INDIC8
+    1326   00:67A9  DB 65 C4 61 F6 67 08 65 03 68 
+    1327   00:67B3  F2 5D               	dw ENDFORTH
+    1328   00:67B5                      ;
+    1329   00:67B5  04                  CELSE:	db 04H
+    1330   00:67B6  45 4C 53 45         	db 'ELSE'	; (IMMEDIATE)
+    1331   00:67BA  A2 67               	dw CIF
+    1332   00:67BC  0A 5E               	dw RUNFORTH
+    1333   00:67BE                      	dw PUSHNR, BRANCH, INDIC, FALSE, INDIC8
+    1333   00:67BE  DB 65 D8 61 F6 67 08 65 03 68 
+    1334   00:67C8  51 64 D5 67 F2 5D   	dw SWAP, THEN, ENDFORTH
+    1335   00:67CE                      ;
+    1336   00:67CE  04                  CTHEN:	db 04H
+    1337   00:67CF  54 48 45 4E         	db 'THEN'	; (IMMEDIATE)
+    1338   00:67D3  B5 67               	dw CELSE
+    1339   00:67D5  0A 5E               THEN:	dw RUNFORTH
+    1340   00:67D7                      	dw HERE, OVER, MINUS, SWAP, POKE8
+    1340   00:67D7  2F 66 18 68 E8 62 51 64 27 68 
+    1341   00:67E1  F2 5D               	dw ENDFORTH
+    1342   00:67E3                      ;
+    1343   00:67E3  02                  CPLUS1:	db 02H
+    1344   00:67E4  31 2B               	db '1+'
+    1345   00:67E6  03 67               	dw CPRINT
+    1346   00:67E8  EA 67               PLUS1:	dw $+2
+    1347   00:67EA  E1                  	POP HL
+    1348   00:67EB  23                  	INC HL
+    1349   00:67EC  E5                  	PUSH HL
+    1350   00:67ED  C3 FE 5D            	JP ENDZ80
+    1351   00:67F0                      ;
+    1352   00:67F0  03                  CINDIC:	db 03H
+    1353   00:67F1  44 4F 2C            	db 'DO,'
+    1354   00:67F4  E3 67               	dw CPLUS1
+    1355   00:67F6  0A 5E               INDIC:	dw RUNFORTH
+    1356   00:67F8  EB 65 2F 66 F2 5D   	dw INDIC16, HERE, ENDFORTH
+    1357   00:67FE                      ;
+    1358   00:67FE  02                  CINDIC8:	db 02H
+    1359   00:67FF  43 2C               	db 'C,'
+    1360   00:6801  F0 67               	dw CINDIC
+    1361   00:6803  05 68               INDIC8:	dw $+2
+    1362   00:6805  D1                  	POP DE
+    1363   00:6806  2A C9 5D            	LD HL,(PPD)
+    1364   00:6809  73                  	LD (HL),E
+    1365   00:680A  23                  	INC HL
+    1366   00:680B  22 C9 5D            	LD (PPD),HL
+    1367   00:680E  C3 FE 5D            	JP ENDZ80
+    1368   00:6811                      ;
+    1369   00:6811  04                  COVER:	db 04H
+    1370   00:6812  4F 56 45 52         	db 'OVER'
+    1371   00:6816  FE 67               	dw CINDIC8
+    1372   00:6818  1A 68               OVER:	dw $+2
+    1373   00:681A  E1                  	POP HL
+    1374   00:681B  D1                  	POP DE
+    1375   00:681C  D5                  	PUSH DE
+    1376   00:681D  E5                  	PUSH HL
+    1377   00:681E  D5                  	PUSH DE
+    1378   00:681F  C3 FE 5D            	JP ENDZ80
+    1379   00:6822                      ;
+    1380   00:6822  02                  CPOKE8:	db 02H
+    1381   00:6823  43 21               	db 'C!'
+    1382   00:6825  11 68               	dw COVER
+    1383   00:6827  29 68               POKE8:	dw $+2
+    1384   00:6829  E1                  	POP HL
+    1385   00:682A  D1                  	POP DE
+    1386   00:682B  73                  	LD (HL),E
+    1387   00:682C  C3 FE 5D            	JP ENDZ80
+    1388   00:682F                      ;
+    1389   00:682F  02                  CCR:	db 02H
+    1390   00:6830  43 52               	db 'CR'
+    1391   00:6832  22 68               	dw CPOKE8
+    1392   00:6834  36 68               	dw $+2
+    1393   00:6836  3E 0D               	LD A,0DH
+    1394   00:6838  CD 3A 03            	CALL VDCHAR
+    1395   00:683B  C3 FE 5D            	JP ENDZ80
+    1396   00:683E                      ;
+    1397   00:683E  02                  COUTRP:	db 02H
+    1398   00:683F  52 3E               	db 'R>'
+    1399   00:6841  2F 68               	dw CCR
+    1400   00:6843  45 68               OUTRP:	dw $+2
+    1401   00:6845  DD 6E 00            	LD L,(IX+0)
+    1402   00:6848  DD 23               	INC IX
+    1403   00:684A  DD 66 00            	LD H,(IX+0)
+    1404   00:684D  DD 23               	INC IX
+    1405   00:684F  E5                  	PUSH HL
+    1406   00:6850  C3 FE 5D            	JP ENDZ80
+    1407   00:6853                      ;
+    1408   00:6853  05                  CSCODE:	db 05H
+    1409   00:6854  53 43 4F 44 45      	db 'SCODE'
+    1410   00:6859  3E 68               	dw COUTRP
+    1411   00:685B  0A 5E               SCODE:	dw RUNFORTH
+    1412   00:685D                      	dw OUTRP, RESERVE, POKE16, ENDFORTH
+    1412   00:685D  43 68 82 66 A3 65 F2 5D 
+    1413   00:6865                      ;
+    1414   00:6865  08                  CCONSTANT:	db 08H
+    1415   00:6866                      	db 'CONSTANT'
+    1415   00:6866  43 4F 4E 53 54 41 4E 54 
+    1416   00:686E  53 68               	dw CSCODE
+    1417   00:6870  0A 5E               CONSTANT:	dw RUNFORTH
+    1418   00:6872  62 66 EB 65 5B 68   	dw CREATE, INDIC16, SCODE
+    1419   00:6878  EB                  	EX DE,HL
+    1420   00:6879  5E                  	LD E,(HL)
+    1421   00:687A  23                  	INC HL
+    1422   00:687B  56                  	LD D,(HL)
+    1423   00:687C  D5                  	PUSH DE
+    1424   00:687D  C3 FE 5D            	JP ENDZ80
+    1425   00:6880                      	;
+    1426   00:6880                      ;
+    1427   00:6880  08                  CVARIABLE:	db 08H
+    1428   00:6881                      	db 'VARIABLE'
+    1428   00:6881  56 41 52 49 41 42 4C 45 
+    1429   00:6889  65 68               	dw CCONSTANT
+    1430   00:688B  0A 5E               	dw RUNFORTH
+    1431   00:688D  70 68 5B 68         	dw CONSTANT, SCODE
+    1432   00:6891  D5                  	PUSH DE
+    1433   00:6892  C3 FE 5D            	JP ENDZ80
+    1434   00:6895                      	;
+    1435   00:6895                      ;
+    1436   00:6895  08                  CQUESTION:	db 08H
+    1437   00:6896                      	db 'QUESTION'
+    1437   00:6896  51 55 45 53 54 49 4F 4E 
+    1438   00:689E  80 68               	dw CVARIABLE
+    1439   00:68A0  A2 68               QUESTION:	dw $+2
+    1440   00:68A2  2A C9 5D            	LD HL,(PPD)
+    1441   00:68A5  3E 0D               	LD A,0DH
+    1442   00:68A7  CD 3A 03            	CALL VDCHAR
+    1443   00:68AA  5E                  	LD E,(HL)
+    1444   00:68AB  23                  	INC HL
+    1445   00:68AC  CD 47 5E            	CALL PUTTEXT
+    1446   00:68AF  3E 3F               	LD A,3FH
+    1447   00:68B1  CD 3A 03            	CALL VDCHAR
+    1448   00:68B4  3E 0D               	LD A,0DH
+    1449   00:68B6  CD 3A 03            	CALL VDCHAR
+    1450   00:68B9  3A D1 5D            QUEST1:	LD A,(VMODE)
+    1451   00:68BC  A7                  	AND A
+    1452   00:68BD  CA 61 5E            	JP Z,PROMPT
+    1453   00:68C0  2A D7 5D            	LD HL,(PUPDC)
+    1454   00:68C3  5E                  	LD E,(HL)
+    1455   00:68C4  23                  	INC HL
+    1456   00:68C5  56                  	LD D,(HL)
+    1457   00:68C6  EB                  	EX DE,HL
+    1458   00:68C7  22 C9 5D            	LD (PPD),HL
+    1459   00:68CA  7E                  	LD A,(HL)
+    1460   00:68CB  85                  	ADD A,L
+    1461   00:68CC  6F                  	LD L,A
+    1462   00:68CD  30 01               	JR NC,QUEST2
+    1463   00:68CF  24                  	INC H
+    1464   00:68D0  23                  QUEST2:	INC HL
+    1465   00:68D1  23                  	INC HL
+    1466   00:68D2  7E                  	LD A,(HL)
+    1467   00:68D3  12                  	LD (DE),A
+    1468   00:68D4  2B                  	DEC HL
+    1469   00:68D5  1B                  	DEC DE
+    1470   00:68D6  7E                  	LD A,(HL)
+    1471   00:68D7  12                  	LD (DE),A
+    1472   00:68D8  C3 61 5E            	JP PROMPT
+    1473   00:68DB                      ;
+    1474   00:68DB                      PILHAVAZIA:	db 'PILHA VAZIA.'
+    1474   00:68DB  50 49 4C 48 41 20 56 41 5A 49 41 2E 
+    1475   00:68E7                      ;
+    1476   00:68E7  E9 68               PVAZIA:	dw $+2
+    1477   00:68E9  2A C1 5D            	LD HL,(PPP)
+    1478   00:68EC  A7                  	AND A
+    1479   00:68ED  ED 72               	SBC HL,SP
+    1480   00:68EF  30 10               	JR NC,PVAZI1
+    1481   00:68F1  1E 0C               	LD E,0CH
+    1482   00:68F3  3E 0D               	LD A,0DH
+    1483   00:68F5  CD 3A 03            	CALL VDCHAR
+    1484   00:68F8  21 DB 68            	LD HL,PILHAVAZIA
+    1485   00:68FB  CD 47 5E            	CALL PUTTEXT
+    1486   00:68FE  C3 B9 68            	JP QUEST1
+    1487   00:6901  C3 FE 5D            PVAZI1:	JP ENDZ80
+    1488   00:6904                      ;
+    1489   00:6904                      MAINLOOP:	dw RUNFORTH, INPUT, OUTIN, PUTOK, OFFSET
+    1489   00:6904  0A 5E A7 5F 26 69 0F 69 FF 61 
+    1490   00:690E  F8                  	db 0F8H
+    1491   00:690F  11 69               PUTOK:	dw $+2
+    1492   00:6911  3E 4F               	LD A,4FH
+    1493   00:6913  CD 3A 03            	CALL VDCHAR
+    1494   00:6916  3E 4B               	LD A,4BH
+    1495   00:6918  CD 3A 03            	CALL VDCHAR
+    1496   00:691B  C3 FE 5D            	JP ENDZ80
+    1497   00:691E                      ;
+    1498   00:691E  05                  COUTIN:	db 05H
+    1499   00:691F  4F 55 54 49 4E      	db 'OUTIN'
+    1500   00:6924  95 68               	dw CQUESTION
+    1501   00:6926  0A 5E               OUTIN:	dw RUNFORTH
+    1502   00:6928                      	dw ASPACE, TOKEN, EXISTS, BRANCH0
+    1502   00:6928  55 63 53 60 66 65 C4 61 
+    1503   00:6930  12                  	db 12H
+    1504   00:6931  B7 65 56 61 C4 61   	dw ISNUMBER, IGUAL0, BRANCH0
+    1505   00:6937  17                  	db 17H
+    1506   00:6938  6E 61 47 61 C4 61   	dw FTOKEN, PEEK16, BRANCH0
+    1507   00:693E  12                  	db 12H
+    1508   00:693F  FF 61               	dw OFFSET
+    1509   00:6941  E7                  	db 0E7H
+    1510   00:6942                      	dw INEXECUTE, FTOKEN, PEEK16, BRANCH0
+    1510   00:6942  D0 66 6E 61 47 61 C4 61 
+    1511   00:694A  06                  	db 06H
+    1512   00:694B  FF 61               	dw OFFSET
+    1513   00:694D  DB                  	db 0DBH
+    1514   00:694E  A0 68 F2 5D         	dw QUESTION, ENDFORTH
+    1515   00:6952                      ;
+    1516   00:6952                      KBO:	dw 0000H, 0000H, 0000H, 0FFFFH, 0FBFFH
+    1516   00:6952  00 00 00 00 00 00 FF FF FF FB 
+    1517   00:695C  FF FF FF FF         	dw 0FFFFH, 0FFFFH
+    1518   00:6960                      ;
+    1519   00:6960  (0BA0)              	dephase
+    1520   00:0BA0                      ;
 
     LABELS
 -------------------------------------------------
@@ -1591,275 +1586,274 @@ Errors: 0
 00:0000033A   VDCHAR
 00:000001C9   VDCLS
 00:00000049   KEYIN
-00:00005DC0   L5DC0
-00:00005DC1   L5DC1
-00:00005DC5   L5DC5
-00:00005DC7   L5DC7
-00:00005DC9   L5DC9
-00:00005DCB   L5DCB
-00:00005DCD   L5DCD
-00:00005DCF   L5DCF
-00:00005DD1   L5DD1
-00:00005DD3   L5DD3
-00:00005DD5   L5DD5
-00:00005DD7   L5DD7
-00:00005DD9   L5DD9
-00:00005DDB   L5DDB
-00:00005DDD   L5DDD
+00:00005DC0   BEGIN
+00:00005DC1   PPP
+00:00005DC5   START
+00:00005DC7   PPR
+00:00005DC9   PPD
+00:00005DCB   PLBP
+00:00005DCD   PBUF
+00:00005DCF   UPDC
+00:00005DD1   VMODE
+00:00005DD3   VBASE
+00:00005DD5   PUPDP
+00:00005DD7   PUPDC
+00:00005DD9   UPCC
+00:00005DDB   VSTATE
+00:00005DDD   BFTC
 00:00005DDF   L5DDF
 00:00005DE0   L5DE0
-00:00005DF2   L5DF2
-00:00005DFE   L5DFE
-00:00005E04   L5E04
-00:00005E0A   L5E0A
-00:00005E18   L5E18
-00:00005E2B   L5E2B
-00:00005E47   L5E47
-00:00005E48   L5E48
-00:00005E51 X L5E51
-00:00005E61   L5E61
-00:00005E8D   L5E8D
-00:00005E94   L5E94
-00:00005E9A   L5E9A
-00:00005EA2   L5EA2
-00:00005EA9   L5EA9
-00:00005EAA   L5EAA
-00:00005EB4   L5EB4
-00:00005EB8   L5EB8
-00:00005EC3   L5EC3
-00:00005ED0   L5ED0
-00:00005EE0   L5EE0
-00:00005EF1   L5EF1
-00:00005F01   L5F01
-00:00005F08   L5F08
-00:00005F0E   L5F0E
-00:00005F33   L5F33
-00:00005F3D   L5F3D
-00:00005F4F   L5F4F
-00:00005F5F   L5F5F
-00:00005F79   L5F79
-00:00005F84   L5F84
-00:00005F92   L5F92
-00:00005F98   L5F98
-00:00005FA7   L5FA7
-00:00005FB9   L5FB9
-00:00005FC3   L5FC3
-00:00005FCC   L5FCC
-00:00005FD9   L5FD9
-00:00005FEC   L5FEC
-00:00005FF2   L5FF2
-00:00005FF8   L5FF8
-00:00006000   L6000
-00:00006019   L6019
-00:0000602D   L602D
-00:00006037   L6037
-00:00006039   L6039
-00:0000604B   L604B
-00:00006053   L6053
-00:00006063   L6063
-00:00006069   L6069
-00:0000606A   L606A
-00:00006079   L6079
-00:0000607C   L607C
-00:0000607F   L607F
-00:00006085   L6085
-00:0000608B   L608B
-00:00006093   L6093
-00:000060A3   L60A3
-00:000060AC   L60AC
-00:000060B0   L60B0
-00:000060BC   L60BC
-00:000060CC   L60CC
-00:000060DC   L60DC
-00:000060E3   L60E3
-00:000060EC   L60EC
-00:000060F2   L60F2
-00:000060F9   L60F9
-00:00006102   L6102
-00:0000611A   L611A
-00:00006124   L6124
+00:00005DF2   ENDFORTH
+00:00005DFE   ENDZ80
+00:00005E04   NEXTOP
+00:00005E0A   RUNFORTH
+00:00005E18   MSGFORTH1
+00:00005E2B   MSGFORTH2
+00:00005E47   PUTTEXT
+00:00005E48   PUTTX1
+00:00005E51 X MAIN
+00:00005E61   PROMPT
+00:00005E8D   SPFORTH
+00:00005E94   CDUP
+00:00005E9A   DUP
+00:00005EA2   CMENOR
+00:00005EA9   MENOR1
+00:00005EAA   MENOR2
+00:00005EB4   MENOR3
+00:00005EB8   CMAIOR
+00:00005EC3   CEMN0
+00:00005ED0   CROT
+00:00005EE0   CEMIT
+00:00005EF1   CKEY
+00:00005F01   CDROP
+00:00005F08   DROP
+00:00005F0E   CCSAVE
+00:00005F33   CSAVE1
+00:00005F3D   CSAVE2
+00:00005F4F   CSAVE3
+00:00005F5F   CSAVE4
+00:00005F79   CSAVE5
+00:00005F84   CSAVE6
+00:00005F92   FORTH
+00:00005F98   CLBP
+00:00005FA7   INPUT
+00:00005FB9   CINPUT
+00:00005FC3   INPUT1
+00:00005FCC   INPUT2
+00:00005FD9   INPUT3
+00:00005FEC   INPUT4
+00:00005FF2   INPUT5
+00:00005FF8   INPUT6
+00:00006000   INPUT7
+00:00006019   INPUT8
+00:0000602D   INPUT9
+00:00006037   CCRS
+00:00006039   CCURSOR
+00:0000604B   CTOKEN
+00:00006053   TOKEN
+00:00006063   TOKEN1
+00:00006069   TOKEN2
+00:0000606A   TOKEN3
+00:00006079   TOKEN4
+00:0000607C   TOKEN5
+00:0000607F   TOKEN6
+00:00006085   TOKEN7
+00:0000608B   TOKEN8
+00:00006093   TOKEN9
+00:000060A3   CSEARCH
+00:000060AC   SEARCH
+00:000060B0   SEARC1
+00:000060BC   SEARC2
+00:000060CC   SEARC3
+00:000060DC   SEARC4
+00:000060E3   CEXECUT
+00:000060EC   EXECUT
+00:000060F2   CMODE
+00:000060F9   MODE
+00:00006102   INILOOP
+00:0000611A   STEPLOOP
+00:00006124   ENDLOOP
 00:0000612B   L612B
 00:00006131   L6131
-00:00006143   L6143
-00:00006147   L6147
-00:00006151   L6151
-00:00006156   L6156
-00:00006161   L6161
-00:00006165   L6165
-00:0000616E   L616E
-00:00006177   L6177
-00:0000617E   L617E
-00:0000618A   L618A
-00:0000619A   L619A
-00:000061A1   L61A1
-00:000061AC   L61AC
-00:000061B3   L61B3
-00:000061BE   L61BE
-00:000061C4   L61C4
-00:000061D0   L61D0
-00:000061D8   L61D8
-00:000061DA   L61DA
-00:000061E0   L61E0
-00:000061E3   L61E3
-00:000061EA   L61EA
-00:000061F6   L61F6
-00:000061FF   L61FF
-00:00006201   L6201
-00:00006207   L6207
-00:0000620A   L620A
-00:00006219   L6219
-00:00006220   L6220
-00:00006229   L6229
-00:00006232   L6232
-00:00006244   L6244
-00:0000624A   L624A
-00:00006259   L6259
-00:00006261   L6261
-00:00006266   L6266
-00:00006270   L6270
-00:00006275   L6275
-00:00006287   L6287
-00:0000628E   L628E
+00:00006143   CPEEK16
+00:00006147   PEEK16
+00:00006151   CIGUAL0
+00:00006156   IGUAL0
+00:00006161   IGUL01
+00:00006165   CFTOKEN
+00:0000616E   FTOKEN
+00:00006177   CENDFOR
+00:0000617E   CLOSELOOP
+00:0000618A   CI
+00:0000619A   C0SET
+00:000061A1   SET0
+00:000061AC   C1SET
+00:000061B3   SET1
+00:000061BE   CGIF
+00:000061C4   BRANCH0
+00:000061D0   CGELSE
+00:000061D8   BRANCH
+00:000061DA   GELSE1
+00:000061E0   GELSE2
+00:000061E3   CGEND
+00:000061EA   GEND
+00:000061F6   CGWHILE
+00:000061FF   OFFSET
+00:00006201   GWHIL1
+00:00006207   GWHIL2
+00:0000620A   CPAGE
+00:00006219   CBASE
+00:00006220   BASE
+00:00006229   CNUMBER
+00:00006232   NUMBER
+00:00006244   NUMBR1
+00:0000624A   NUMBR2
+00:00006259   NUMBR3
+00:00006261   NUMBR4
+00:00006266   NUMBR5
+00:00006270   NUMBR6
+00:00006275   NUMBR7
+00:00006287   NUMBR8
+00:0000628E   TIMES1
 00:0000629C   L629C
-00:000062A7   L62A7
+00:000062A7   TIMES2
 00:000062AD   L62AD
 00:000062B3   L62B3
-00:000062B7   L62B7
-00:000062C0   L62C0
-00:000062C4   L62C4
-00:000062D7   L62D7
-00:000062DB   L62DB
-00:000062E4   L62E4
-00:000062E8   L62E8
-00:000062F3   L62F3
-00:000062F8   L62F8
-00:00006304   L6304
-00:0000630C   L630C
+00:000062B7   TIMES3
+00:000062C0   CTIMES
+00:000062C4   TIMES
+00:000062D7   CPLUS
+00:000062DB   PLUS
+00:000062E4   CMINUS
+00:000062E8   MINUS
+00:000062F3   CPEEK8
+00:000062F8   PEEK8
+00:00006304   CDMOD
+00:0000630C   DMOD
 00:0000631C   L631C
 00:0000632F   L632F
 00:0000633C   L633C
 00:0000633E   L633E
 00:00006348   L6348
-00:0000634C   L634C
-00:00006355   L6355
-00:0000635E   L635E
-00:00006366   L6366
-00:00006372   L6372
-00:00006377   L6377
-00:0000638E   L638E
-00:0000639E   L639E
+00:0000634C   CASPACE
+00:00006355   ASPACE
+00:0000635E   CASCII
+00:00006366   ASCII
+00:00006372   ASCI2
+00:00006377   CNEXT
+00:0000638E   CJ
+00:0000639E   CPESQ
 00:000063BE   L63BE
 00:000063EF   L63EF
-00:00006403   L6403
-00:00006423   L6423
-00:00006429   L6429
-00:00006431   L6431
-00:0000644A   L644A
-00:00006451   L6451
-00:00006459   L6459
-00:0000645D   L645D
-00:0000646D   L646D
-00:00006472   L6472
-00:00006481   L6481
-00:00006487   L6487
-00:00006495   L6495
-00:00006499   L6499
-00:0000649E   L649E
-00:000064AD   L64AD
-00:000064B4   L64B4
-00:000064BF   L64BF
-00:000064C2   L64C2
-00:000064CB   L64CB
-00:000064CC   L64CC
-00:000064E3   L64E3
-00:000064EF   L64EF
-00:000064F6   L64F6
-00:00006508   L6508
-00:00006511   L6511
-00:0000651B   L651B
-00:00006524   L6524
-00:0000652E   L652E
-00:00006537   L6537
-00:00006542   L6542
-00:0000654B   L654B
-00:00006553   L6553
-00:0000655C   L655C
-00:00006566   L6566
-00:00006596   L6596
-00:0000659F   L659F
-00:000065A3   L65A3
-00:000065AD   L65AD
-00:000065B7   L65B7
-00:000065D6   L65D6
-00:000065DB   L65DB
-00:000065E7   L65E7
-00:000065EB   L65EB
-00:000065FB   L65FB
-00:00006603   L6603
-00:0000660D   L660D
-00:0000661A   L661A
-00:0000661F   L661F
-00:00006628   L6628
-00:0000662F   L662F
-00:00006638   L6638
-00:0000663D   L663D
-00:0000664B   L664B
-00:00006650   L6650
-00:00006659   L6659
-00:00006662   L6662
-00:00006682   L6682
-00:00006695   L6695
-00:000066B3   L66B3
-00:000066C5   L66C5
-00:000066D0   L66D0
-00:000066EE   L66EE
-00:000066F2   L66F2
-00:000066FF   L66FF
-00:00006703   L6703
-00:00006708   L6708
-00:0000670C   L670C
-00:00006718   L6718
-00:0000672A   L672A
-00:0000673B   L673B
-00:0000674D   L674D
-00:0000675C   L675C
-00:0000676D   L676D
-00:0000678C   L678C
-00:000067A2   L67A2
-00:000067B5   L67B5
-00:000067CE   L67CE
-00:000067D5   L67D5
-00:000067E3   L67E3
-00:000067E8   L67E8
-00:000067F0   L67F0
-00:000067F6   L67F6
-00:000067FE   L67FE
-00:00006803   L6803
-00:00006811   L6811
-00:00006818   L6818
-00:00006822   L6822
-00:00006827   L6827
-00:0000682F   L682F
-00:0000683E   L683E
-00:00006843   L6843
-00:00006853   L6853
-00:0000685B   L685B
-00:00006865   L6865
-00:00006870   L6870
-00:00006880   L6880
-00:00006895   L6895
-00:000068A0   L68A0
-00:000068B9   L68B9
-00:000068D0   L68D0
-00:000068DB   L68DB
-00:000068E7   L68E7
-00:00006901   L6901
-00:00006904   L6904
-00:0000690F   L690F
-00:00006911   L6911
-00:0000691E   L691E
-00:00006926   L6926
-00:00006952   L6952
+00:00006403   CPTC
+00:00006423   CADDSP
+00:00006429   ADDSP
+00:00006431   CPICK
+00:0000644A   CSWAP
+00:00006451   SWAP
+00:00006459   CSTRNUM
+00:0000645D   STRNUM
+00:0000646D   CININUM
+00:00006472   ININUM
+00:00006481   CABS
+00:00006487   ABS
+00:00006495   ABS1
+00:00006499   CNUMFMT
+00:0000649E   NUMFMT
+00:000064AD   CSIGN
+00:000064B4   SIGN
+00:000064BF   SIGN1
+00:000064C2   CTYPE
+00:000064CB   TYPE
+00:000064CC   TYPE1
+00:000064E3   CENDNUM
+00:000064EF   ENDFMT
+00:000064F6   CDISPNUM
+00:00006508   FALSE
+00:00006511   CCONTEXT
+00:0000651B   CONTEXT
+00:00006524   CCURRENT
+00:0000652E   CURRENT
+00:00006537   CCOMPILER
+00:00006542   COMPILER
+00:0000654B   CSTATE
+00:00006553   STATE
+00:0000655C   CEXISTS
+00:00006566   EXISTS
+00:00006596   TRUE
+00:0000659F   CPOKE16
+00:000065A3   POKE16
+00:000065AD   CISNUMBER
+00:000065B7   ISNUMBER
+00:000065D6   CPUSHN
+00:000065DB   PUSHNR
+00:000065E7   CINDIC16
+00:000065EB   INDIC16
+00:000065FB   CENTRY
+00:00006603   ENTRY
+00:0000660D   NEXTPPD
+00:0000661A   CDP
+00:0000661F   DP
+00:00006628   CHERE
+00:0000662F   HERE
+00:00006638   CSUMMEM
+00:0000663D   SUMMEM
+00:0000664B   CPLUS2
+00:00006650   PLUS2
+00:00006659   CCREATE
+00:00006662   CREATE
+00:00006682   RESERVE
+00:00006695   CINICMD
+00:000066B3   CENDCMD
+00:000066C5   CINEXECUTE
+00:000066D0   INEXECUTE
+00:000066EE   CIGUAL
+00:000066F2   IGUAL
+00:000066FF   IGUAL1
+00:00006703   CPRINT
+00:00006708   PRINT
+00:0000670C   PRINT1
+00:00006718   CSTEPLOOP
+00:0000672A   LEAVELOOP
+00:0000673B   CLEAVE
+00:0000674D   CDO
+00:0000675C   CLOOP
+00:0000676D   CCMPRINT
+00:0000678C   CINIZ80
+00:000067A2   CIF
+00:000067B5   CELSE
+00:000067CE   CTHEN
+00:000067D5   THEN
+00:000067E3   CPLUS1
+00:000067E8   PLUS1
+00:000067F0   CINDIC
+00:000067F6   INDIC
+00:000067FE   CINDIC8
+00:00006803   INDIC8
+00:00006811   COVER
+00:00006818   OVER
+00:00006822   CPOKE8
+00:00006827   POKE8
+00:0000682F   CCR
+00:0000683E   COUTRP
+00:00006843   OUTRP
+00:00006853   CSCODE
+00:0000685B   SCODE
+00:00006865   CCONSTANT
+00:00006870   CONSTANT
+00:00006880   CVARIABLE
+00:00006895   CQUESTION
+00:000068A0   QUESTION
+00:000068B9   QUEST1
+00:000068D0   QUEST2
+00:000068DB   PILHAVAZIA
+00:000068E7   PVAZIA
+00:00006901   PVAZI1
+00:00006904   MAINLOOP
+00:0000690F   PUTOK
+00:0000691E   COUTIN
+00:00006926   OUTIN
+00:00006952   KBO
 
 
  Output: Forth-TRS-80.out
@@ -1877,4 +1871,4 @@ Errors: 0
   Org: 00000000  Size: *  Used: 00000BA0
 
    Address   Length Align   Label
-   00000000    2976         L5DC0
+   00000000    2976         BEGIN
